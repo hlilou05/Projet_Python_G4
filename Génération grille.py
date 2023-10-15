@@ -25,7 +25,7 @@ def display_tiles(screen, value):
 
 class Tile():
     def __init__(self, x, y):
-        self.image = pygame.image.load("Real Tile.png")
+        self.image = pygame.image.load("Tile32x32.png")
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
