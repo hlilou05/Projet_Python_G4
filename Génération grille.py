@@ -14,11 +14,15 @@ def update_window(window):
 
 def display_tiles(screen, value):
     screen_x, screen_y = screen.get_size()
-    print(screen_x, screen_y)
-    for y in range(value):
-        for x in range(value):
-            new_tile = Tile(screen_x//2 + x*TILE_SIZE, y*TILE_SIZE)
+    for y in range(-value//2, 0):
+        for x in range(-value//2, value//2):
+            new_tile = Tile(screen_x//4 + screen_y//2 + x*TILE_SIZE,screen_y//2 - screen_x//4 + y*TILE_SIZE)
             screen.blit(new_tile.image, iso_coord(new_tile.rect.x, new_tile.rect.y))
+    for y in range(0, value//2):
+        for x in range(-value//2,value//2):
+            new_tile = Tile(screen_x//4 + screen_y//2 + x*TILE_SIZE,screen_y//2 - screen_x//4 + y*TILE_SIZE)
+            screen.blit(new_tile.image, iso_coord(new_tile.rect.x, new_tile.rect.y))
+
 
 
 
