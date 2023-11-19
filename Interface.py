@@ -36,7 +36,14 @@ class Bob(pygame.sprite.Sprite):
         self.perception = 1
         self.mass= 1
         self.image = pygame.image.load("bob.png")
-        self.image = pygame.transform.scale(self.image, (16, 16))  # Redimensionnez l'image à la taille souhaitée
+        self.image_blue = pygame.image.load("bob.blue.png")
+        self.image_rouge = pygame.image.load("bob.rouge.png")
+        self.image = pygame.transform.scale(self.image, (16, 16)) 
+        self.image_blue = pygame.transform.scale(self.image_blue, (16, 16))
+        self.image_rouge = pygame.transform.scale(self.image_rouge, (16, 16))
+        
+
+        self.image = self.image_blue if self.velocity > 20 else self.image_rouge
         self.rect = self.image.get_rect()
         self.rect.x = 300
         self.rect.y = 400
@@ -55,6 +62,15 @@ class Bob(pygame.sprite.Sprite):
         screen.fill((255, 255, 255))
         self.rect.y += self.velocity
         display_tiles(screen, 20)
+    def update_color(self):
+        
+        if self.velocity > 20:
+            # Plus rapide, plus bleu
+            self.image = self.image_blue
+        else:
+            # Plus lent, plus rouge
+            self.image = self.image_rouge
+
 class Game : 
     def __init__(self):
         self.bob=Bob()
