@@ -29,7 +29,7 @@ class Tile:
 class Bob(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.velocity = 25
+        self.velocity = 15
         self.size = 100
         self.energy = 100
         self.maxenergy = 200
@@ -43,7 +43,8 @@ class Bob(pygame.sprite.Sprite):
         self.image_rouge = pygame.transform.scale(self.image_rouge, (16, 16))
         
 
-        self.image = self.image_blue if self.velocity > 20 else self.image_rouge
+        self.image = self.image_blue if self.velocity > 15 else self.image
+        self.image = self.image_rouge if self.mass > 10 else self.image
         self.rect = self.image.get_rect()
         self.rect.x = 300
         self.rect.y = 400
