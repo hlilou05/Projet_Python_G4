@@ -10,19 +10,20 @@
 # It will be drop at every start of tick so when the game is saved, you have access to the infos insight before mouvement
 # Named "Seen" in the function.
 #########################
+
 def perception(self, key):
     (x, y) = key
+    self.Seen.drop.values()
     for i in range(-self.Bp, self.Bp  + 1):
         for j in range(- (self.Bp - abs(i)) ,self.Bp - abs(i) + 1):
             if((x + i, y + j) in GameWorld.gridFood.key()):
                 self.Seen["Food"].append((x + i, y + j), GameWorld.gridFood[(x + i, y + j)])
             elif((x + i, y + j) in GameWorld.gridBob.key()):
-
-            
-
-
-
-
+                if(GameWorld.gridBob.key[x + i, y + j].Mass - self.Mass > SeuilPredator ):
+                    self.Seen["Bob+"].append((x + i, y + j), GameWorld.gridFood[(x + i, y + j)])
+                    self.fuite = 1
+                else:
+                    self.Seen["Bob-"].append((x + i, y + j), GameWorld.gridFood[(x + i, y + j)])
 
 
 
