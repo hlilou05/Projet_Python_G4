@@ -21,7 +21,7 @@ def use_memory(self):
         self.remembering_food = 0 
 
 def deplace_perception(self, coord):
-    diff = self.perception*2
+    diff = self.Bp*2
     maxfood = 0
     for food in self.perception["food"].items():
         if diff > abs(food[0][0]-coord[0])+abs(food[0][1]-coord[1]):
