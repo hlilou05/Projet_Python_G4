@@ -12,8 +12,9 @@ def use_memory(self,bob_co):
         # no food on bob's coordinates, amount of food = 0
         self.path.append([bob_co, 0])
     #if the coordinates of the remembered food contain a different amount of food (food eaten or food that respawned)
-    if self.perception["food"].has_key(self.possiblefood[0]) & self.perception["food"][1] != self.possiblefood[1]:
-        self.possiblefood = (self.possiblefood[0], 0)
+    if self.perception["food"].has_key(self.possiblefood[0]):
+        if self.perception["food"][1] != self.possiblefood[1]:
+            self.possiblefood = (self.possiblefood[0], 0)
     # find the biggest food in the bob's perception
     for food in self.perception["food"].items():
         if food[1] > self.possiblefood[1]:
