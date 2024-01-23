@@ -6,11 +6,10 @@
 
 def use_memory(self,bob_co):
     # if there is some food on the bob's coordinates, save its amount
-    if GameWorld.gridFood(bob_co):
-        self.path.append([bob_co,GameWorld.gridFood(bob_co)])
-    else:
-        # no food on bob's coordinates, amount of food = 0
-        self.path.append([bob_co, 0])
+        self.path.append(bob_co)
+    # Coordinates where the bob mustn't go
+        self.forbidden_co = bob_co
+        no food on bob's coordinates, amount of food = 0
     #if the coordinates of the remembered food contain a different amount of food (food eaten or food that respawned)
     if self.perception["food"].has_key(self.possiblefood[0]):
         if self.perception["food"][1] != self.possiblefood[1]:
@@ -20,7 +19,7 @@ def use_memory(self,bob_co):
         if food[1] > self.possiblefood[1]:
             self.possiblefood = food
     #determines whether the bob needs to remember the food.
-    if self.possiblefood not in self.perception["food"].items():
+    if self.possiblefood not in self.perception["food"].items() & self.possiblefood[1] > 0:
         self.remembering_food = 1
     else:
         self.remembering_food = 0 
@@ -71,27 +70,27 @@ def deplace_perception(self, coord):
         (x,y) = coord
         if self.currenttarget[0] == coord[0]:
             if self.currenttarget[1] > coord[1]:
-                y +=1
+                y += (int)self.velocity
             else:
-                y -= 1
+                y -= (int)self.velocity
         elif self.currenttarget[1] == coord[1]:
             if self.currenttarget[0] > coord[0]:
-                x += 1
+                x += (int)self.velocity
             else:
-                x -= 1
+                x -= (int)self.velocity
         elif self.currenttarget[0] < coord[0] & self.currenttarget[1] < coord[1]:
             if randint(0,1):
-                x -= 1
+                x -= (int)self.velocity
             else:
-                y -= 1
+                y -= (int)self.velocity
         elif self.currenttarget[0] > coord[0] & self.currenttarget[1] < coord[1]:
             if randint(0,1):
-                x += 1
+                x += (int)self.velocity
             else:
-                y -= 1
+                y -= (int)self.velocity
         elif self.currenttarget[0] < coord[0] & self.currenttarget[1] > coord[1]:
             if randint(0,1):
-                x -= 1
+                x -= (int)self.velocity
             else:
-                y += 1
+                y += (int)self.velocity
         return (x,y)
