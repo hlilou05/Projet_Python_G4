@@ -70,27 +70,27 @@ def deplace_perception(self, coord):
         (x,y) = coord
         if self.currenttarget[0] == coord[0]:
             if self.currenttarget[1] > coord[1]:
-                y += (int)self.velocity
+                y += int(self.velocity)
             else:
-                y -= (int)self.velocity
+                y -= int(self.velocity)
         elif self.currenttarget[1] == coord[1]:
             if self.currenttarget[0] > coord[0]:
-                x += (int)self.velocity
+                x += int(self.velocity)
             else:
-                x -= (int)self.velocity
+                x -= int(self.velocity)
         elif self.currenttarget[0] < coord[0] & self.currenttarget[1] < coord[1]:
             if randint(0,1):
-                x -= (int)self.velocity
+                x -= int(self.velocity)
             else:
-                y -= (int)self.velocity
+                y -= int(self.velocity)
         elif self.currenttarget[0] > coord[0] & self.currenttarget[1] < coord[1]:
             if randint(0,1):
-                x += (int)self.velocity
+                x += int(self.velocity)
             else:
-                y -= (int)self.velocity
+                y -= int(self.velocity)
         elif self.currenttarget[0] < coord[0] & self.currenttarget[1] > coord[1]:
             if randint(0,1):
-                x -= (int)self.velocity
+                x -= int(self.velocity)
             else:
-                y += (int)self.velocity
+                y += int(self.velocity)
         return (x,y)
