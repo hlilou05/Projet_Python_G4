@@ -10,7 +10,7 @@ from Constant import *
 class World():
     def __init__(self) :
         self.lastID = -1 #identifiant unique pour chaque bob créé.
-        self.pause = True #pour mettre sur pause le jeu.
+        self.pause = False #pour mettre sur pause le jeu.
         self.gridBob = {} #Dictionnaire de bobs.
         self.gridFood = {} #Dictionnaire d'élements Foods
         self.bobArray=[] #Tableau de bob utilisé à chaque tour pour parcourir l'esemble des bobs de façon aléatoire.
@@ -75,29 +75,46 @@ class World():
         Fonction qui fait des statiqtiques sur les bobs encore en vie.
         """
         self.statEnergy = [maxEnergy, 0, 0]
-        self.statMass = [maxMass, minMass, 0] #statistique de masse
-        self.statVelocity = [maxVelocity, minVelocity, 0] #statistique de vitesse
-        self.statPerception = [maxPerception, minPerception, 0] #statistique de perception
-        self.statMemory = [maxMemory, minMemory, 0] #statistique de mémoire
+        self.statMass = [0, 0, 0] #statistique de masse
+        self.statVelocity = [0, 0, 0] #statistique de vitesse
+        self.statPerception = [0, 0, 0] #statistique de perception
+        self.statMemory = [0, 0, 0] #statistique de mémoire
         self.bobcount = 0
         for key in self.gridBob:
             for bob in self.gridBob[key]:
-                self.bobcount += 1
-                self.statMass[0] = min(self.statMass[0], bob.mass)
-                self.statMass[1] = max(self.statMass[1], bob.mass)
-                self.statMass[2] += bob.mass
-                self.statEnergy[0] = min(self.statEnergy[0], bob.energy)
-                self.statEnergy[1] = max(self.statMass[1], bob.energy)
-                self.statEnergy[2] += bob.energy
-                self.statVelocity[0] = min(self.statVelocity[0], bob.velocity)
-                self.statVelocity[1] = max(self.statVelocity[1], bob.velocity)
-                self.statVelocity[2] += bob.velocity
-                self.statPerception[0] = min(self.statPerception[0], bob.perception)
-                self.statPerception[1] = max(self.statPerception[1], bob.perception)
-                self.statPerception[2] += bob.perception
-                self.statMemory[0] = min(self.statMemory[0], bob.memory)
-                self.statMemory[1] = max(self.statMemory[1], bob.memory)
-                self.statMemory[2] += bob.memory
+                if(self.bobcount == 0) :
+                    self.statMass[0] = bob.mass
+                    self.statMass[1] = bob.mass
+                    self.statMass[2] += bob.mass
+                    self.statEnergy[0] = bob.energy
+                    self.statEnergy[1] = bob.energy
+                    self.statEnergy[2] += bob.energy
+                    self.statVelocity[0] = bob.velocity
+                    self.statVelocity[1] = bob.velocity
+                    self.statVelocity[2] += bob.velocity
+                    self.statPerception[0] = bob.perception
+                    self.statPerception[1] = bob.perception
+                    self.statPerception[2] += bob.perception
+                    self.statMemory[0] = bob.memory
+                    self.statMemory[1] = bob.memory
+                    self.statMemory[2] += bob.memory
+                else :
+                    self.bobcount += 1
+                    self.statMass[0] = min(self.statMass[0], bob.mass)
+                    self.statMass[1] = max(self.statMass[1], bob.mass)
+                    self.statMass[2] += bob.mass
+                    self.statEnergy[0] = min(self.statEnergy[0], bob.energy)
+                    self.statEnergy[1] = max(self.statMass[1], bob.energy)
+                    self.statEnergy[2] += bob.energy
+                    self.statVelocity[0] = min(self.statVelocity[0], bob.velocity)
+                    self.statVelocity[1] = max(self.statVelocity[1], bob.velocity)
+                    self.statVelocity[2] += bob.velocity
+                    self.statPerception[0] = min(self.statPerception[0], bob.perception)
+                    self.statPerception[1] = max(self.statPerception[1], bob.perception)
+                    self.statPerception[2] += bob.perception
+                    self.statMemory[0] = min(self.statMemory[0], bob.memory)
+                    self.statMemory[1] = max(self.statMemory[1], bob.memory)
+                    self.statMemory[2] += bob.memory
 
         if self.bobcount == 0 :
             self.statEnergy = [0, 0, 0]
@@ -162,12 +179,14 @@ class World():
             bob = choice(self.bobArray)
             self.bobArray.remove(bob)
             assert bob in self.gridBob[bob.coord]
+            bob.perception()
+            bob.memory()
             #Choix d'une action :
-            if not bob.eat(): #Eat food
-                if not bob.hunt(): #Hunt other bobs
+            if not bob.hunt(): #Eat food
+                if not bob.eat(): #Hunt other bobs
                     if not bob.fuck(): #Fuck
-                        bob.randomMove() #Move randomly
-        #sleep(0.5)
+                        bob.move() #Move randomly
+
         if TICKSHOWBOBS :
             for _ in range(self.bobcount): print("|", end = "")
             print()
@@ -188,9 +207,8 @@ class World():
             print("DAY", self.dayCounter)
             self.foodSpawn()
             for _ in range (ticksPerDay):
-                while self.pause == True : sleep(0.5) #pour mettre sur pause.
+                while self.pause == True : continue # pour mettre sur pause.
                 self.tick()
-                #printGridBob()
 
     def play(self, NbDay):
         for _ in range (NbDay) :

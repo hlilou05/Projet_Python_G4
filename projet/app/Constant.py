@@ -11,7 +11,17 @@ gridSizeY = 100 #Taille de la grille sur l'axe Y.
 ticksPerDay = 100 #Nombre de Ticks par jour
 bobsQty = 100 #quantité initiale de Bobs.
 foodQty = 100 #quantité d'items Food générés par jours
-NbDay = 50 #Nombre de tick par jour
+NbDay = 50 #Nombre de jour à jouer
+
+
+### Fonction Activated ###
+Parthenogenesis = True
+Eat = True
+Hunt = True
+Perception = True
+Memory = True
+Reproduction = True
+
 
 
 ### Bob's parameters ###
@@ -19,17 +29,19 @@ NbDay = 50 #Nombre de tick par jour
 energyInitLevel = 100 #Niveau d'énergie initial des Bobs.
 maxEnergy = 200 #Energie max d'un Bob.
 #Bob's perception
-minPerception = 0
-maxPerception = 10
+InitPerception = 3
 #Bob's velocity
-minVelocity = 0
-maxVelocity = 10
+InitVelocity = 3
 #Bob's memory
-minMemory = 0
-maxMemory = 10
+InitMemory = 3
 #Bob's mass
-minMass = 1
-maxMass = 30
+InitMass = 3
+
+### Taux de mutation ###
+TauxMutationMass = 0.2
+TauxMutationVelocity = 0.2
+TauxMutationMemory = 0.2
+TauxMutationPerception = 0.2
 
 ### Energy ###
 #Food Items
@@ -44,6 +56,9 @@ sexEnergy = 100 #energie consommée pour produire un bob par reproduction sexuel
 #Energy for each Tick
 tickStaticEnergy = 0.5 #energie consommée par tick en restant static
 tickMobileEnergy = 1 #energie consommée par tick en étant mobile
-SeuilPredator = 1/3 # Seuil du quotient de masse pour distinguer predateur/proie
+tickPerceptionPenalty = 0.2 # Pourcentage des points de perceptions pour conso d'energie
+tickMemoryPenalty = 0.2 # Pourcentage des points de perceptions pour conso d'energie
+
+SeuilPredator = 2/3 # Seuil du quotient de masse pour distinguer predateur/proie
 
 
