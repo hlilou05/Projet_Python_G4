@@ -8,7 +8,6 @@ def use_memory(self,bob_co):
     # if there is some food on the bob's coordinates, save its amount
         self.path.append(bob_co)
     # Coordinates where the bob mustn't go
-        self.forbidden_co = bob_co
         no food on bob's coordinates, amount of food = 0
     #if the coordinates of the remembered food contain a different amount of food (food eaten or food that respawned)
     if self.perception["food"].has_key(self.possiblefood[0]):
@@ -42,7 +41,7 @@ def deplace_perception(self, coord):
                 self.currenttarget = food[0]
                 maxfood = food[1]
     if self.currenttarget != None:
-       (x,y) = reach_target(self,coord)
+       (x,y) = move_towards_food(self,coord)
         if (x,y) not in GameWorld.gridBob : 
             GameWorld.gridBob[(x,y)]=[]
         GameWorld.gridBob[(x,y)].append(self)
@@ -58,7 +57,7 @@ def deplace_perception(self, coord):
                     self.currenttarget = bob[0]
                     maxfood = bob[1]
         if self.currenttarget != None:
-            (x,y) = reach_target(self,coord)
+            (x,y) = move_towards_food(self,coord)
             if (x,y) not in GameWorld.gridBob : 
                 GameWorld.gridBob[(x,y)]=[]
             GameWorld.gridBob[(x,y)].append(self)
