@@ -477,6 +477,14 @@ class View:
         self.menu_active = True
         self.game_active = False  # Ajout d'une variable pour indiquer si le jeu est actif
         self.suivant_pressed = False
+        self.pages = []
+        # Initialiser les pages
+        self.pages.append(self.display_menu)
+        self.pages.append(self.affiche_formulaire)
+        self.pages.append(self.affiche_deuxieme_page)
+        # Choisir la première page à afficher
+        self.current_page = 0
+        self.run()
         self.display_menu()
 
     def display_menu(self):
@@ -524,6 +532,11 @@ class View:
             self.display_tiles()
             pygame.display.update()
             sleep(0.01)
+    def run(self):
+        while self.running:
+            # Exécuter la page actuelle
+            self.pages[self.current_page]()
+
 
     def continuous_display(self):
         ThreadDisplay = Thread(target=self.continuous_display_thread)
@@ -539,6 +552,15 @@ class View:
         return [x - y, (x + y) / 2]
 
     def display_tiles(self):
+        pause_button = pygame.Rect(self.screen.get_width() - 200, 50, 150, 50)
+        pygame.draw.rect(self.screen, marron, pause_button)
+        afficher_texte("Pause", self.screen.get_width() - 125, 75)
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        if pause_button.collidepoint(mouse_x, mouse_y):
+            pygame.draw.rect(self.screen, rouge, pause_button, 2)
+
+        if pygame.mouse.get_pressed()[0] and pause_button.collidepoint(mouse_x, mouse_y):
+            self.affiche_pause_menu()
         TILE_SIZE = 16 * self.zoom
         screen_x, screen_y = self.screen.get_size()
         for y in range(-self.value // 2, self.value // 2):
@@ -548,7 +570,44 @@ class View:
                 self.screen.blit(pygame.transform.scale(new_tile.image, (int(32 * self.zoom), int(32 * self.zoom))),
                                  (self.iso_coord(new_tile.rect.x, new_tile.rect.y)[0] + self.offsetx * TILE_SIZE,
                                   self.iso_coord(new_tile.rect.x, new_tile.rect.y)[1] + self.offsety * TILE_SIZE))
+    def affiche_pause_menu(self):
+        self.pause_menu_active = True
+        while self.pause_menu_active:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = pygame.mouse.get_pos()
+                    if 300 <= x <= 500 and 200 <= y <= 250:
+                        print("Resume")
+                        self.pause_menu_active = False
+                    elif 300 <= x <= 500 and 300 <= y <= 350:
+                        print("options")
+                        self.pause_menu_active = False
+                        variables = ['GridSizeX', 'GridSizeY', 'TicksPerDay', 'BobsQty', 'FoodQty', 'EnergyInitLevel', 'MaxEnergy', 'InitPerception']
+                        self.affiche_formulaire(variables)
+                    elif 300 <= x <= 500 and 400 <= y <= 450:
+                        print("Quit to Menu")
+                        self.pause_menu_active = False
+                        self.game_active = False
+                        self.menu_active = True
+                        self.display_menu()
+                    
+                        
 
+            # Affichage de la page de pause
+            self.screen.fill("WHITE")
+            afficher_texte("PAUSE", self.screen.get_width() // 2, 100)
+            pygame.draw.ellipse(self.screen, marron, (300, 200, 200, 50))
+            afficher_texte("Resume", self.screen.get_width() // 2, 225)
+            pygame.draw.ellipse(self.screen, marron, (300, 300, 200, 50))
+            afficher_texte("Options", self.screen.get_width() // 2, 325)
+            pygame.draw.ellipse(self.screen, marron, (300, 400, 200, 50))
+            afficher_texte("Quit to Menu", self.screen.get_width() // 2, 425)
+
+            pygame.display.update()
+ 
     def actualise_user_input(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -586,14 +645,27 @@ class View:
                 elif event.key == pygame.K_RIGHT:
                     self.offsetx += 1
     def affiche_deuxieme_page(self):
-        # Code pour afficher la deuxième page
-        # Utilisez une nouvelle liste de variables et champs pour la deuxième page
-        self.suivant_pressed = False 
-        variables_page2 = ['Variable1', 'Variable2', 'Variable3', 'Variable4']
-        champs_page2 = [pygame.Rect(300, 50 + i * 70, 300, 50) for i in range(len(variables_page2))]
+        global couleur_inactive
+        global actif_champ
+        global textes
+        global couleur_page2
+
+        # Charger l'image de fond
+        background = pygame.image.load("arrière_plan.jfif")
+        background = pygame.transform.scale(background, (fenetre.get_width(), fenetre.get_height()))
+        fenetre.blit(background, (0, 0))
+
+        variables_page2 = ['InitVelocity', 'InitMemory', 'InitMass', 'TauxMutationMass', 'TauxMutationVelocity',
+                        'TauxMutationMemory', 'TauxMutationPerception']
+        champs_page2 = [pygame.Rect(345, 50 + i * 70, 300, 50) for i in range(len(variables_page2))]
         textes_page2 = [''] * len(variables_page2)
         couleur_page2 = couleur_inactive
         actif_champ_page2 = None
+
+        # Ajouter le bouton "Retour"
+        retour_button = pygame.Rect(largeur - 150, hauteur - 100, 100, 50)
+        pygame.draw.rect(fenetre, rouge, retour_button)
+        afficher_texte("Retour", largeur - 100, hauteur - 75)
 
         while True:
             for event in pygame.event.get():
@@ -601,6 +673,11 @@ class View:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = pygame.mouse.get_pos()
+                    if retour_button.collidepoint(x, y):
+                        self.suivant_pressed = False  # Assurez-vous que suivant_pressed est réinitialisé
+                        return  # Quitter la fonction pour revenir à la page précédente
+
                     for i, champ in enumerate(champs_page2):
                         if champ.collidepoint(event.pos):
                             actif_champ_page2 = i
@@ -618,8 +695,6 @@ class View:
                         else:
                             textes_page2[actif_champ_page2] += event.unicode
 
-            # Affichage de la deuxième page
-            fenetre.fill("WHITE")
             for i, (variable, champ) in enumerate(zip(variables_page2, champs_page2)):
                 var_surface = police.render(variable, True, noir)
                 fenetre.blit(var_surface, (50, 50 + i * 70))
@@ -631,6 +706,9 @@ class View:
                 fenetre.blit(texte_surface, (champ.x + 5, champ.y + 5))
 
             pygame.display.update()
+
+
+
     def affiche_formulaire(self, variables):
         global couleur
         global actif_champ
@@ -643,7 +721,7 @@ class View:
             var_surface = police.render(variable, True, noir)
             fenetre.blit(var_surface, (50, 50 + i * 70))
 
-            pygame.draw.rect(fenetre, couleur, champ, 2)
+            pygame.draw.rect(fenetre, couleur, champ, 0)  # Ajustez la largeur de la bordure à 0 pour éviter la division en 2
             texte_surface = police.render(textes[i], True, noir)
             largeur_texte = max(200, texte_surface.get_width() + 10)
             champ.w = largeur_texte
@@ -652,9 +730,9 @@ class View:
         retour_button = pygame.Rect(largeur - 150, hauteur - 100, 100, 50)
         pygame.draw.rect(fenetre, rouge, retour_button)
         afficher_texte("Retour", largeur - 100, hauteur - 75)
-        suivant_button = pygame.Rect(largeur - 300, hauteur - 100, 100, 50)
+        suivant_button = pygame.Rect(largeur - 150, hauteur - 175, 100, 50)
         pygame.draw.rect(fenetre, vert, suivant_button)
-        afficher_texte("Suivant", largeur - 250, hauteur - 75)
+        afficher_texte("Suivant", largeur - 100, hauteur - 150)
         pygame.display.flip()
 
         while not self.suivant_pressed:
@@ -674,15 +752,26 @@ class View:
                     if suivant_button.collidepoint(event.pos):
                         self.suivant_pressed = True  # Définir suivant_pressed à True et quitter la boucle
 
-                    if event.type == pygame.KEYDOWN:
-                        if actif_champ is not None:
-                            if event.key == pygame.K_RETURN:
-                                print("Variable {}: {}".format(actif_champ + 1, textes[actif_champ]))
-                                textes[actif_champ] = ''
-                            elif event.key == pygame.K_BACKSPACE:
-                                textes[actif_champ] = textes[actif_champ][:-1]
-                            else:
-                                textes[actif_champ] += event.unicode
+                if event.type == pygame.KEYDOWN:
+                    if actif_champ is not None:
+                        if event.key == pygame.K_RETURN:
+                            print("Variable {}: {}".format(actif_champ + 1, textes[actif_champ]))
+                            textes[actif_champ] = ''
+                        elif event.key == pygame.K_BACKSPACE:
+                            textes[actif_champ] = textes[actif_champ][:-1]
+                        else:
+                            textes[actif_champ] += event.unicode
+
+            # Afficher le texte entré dans chaque champ
+            for i, (variable, champ) in enumerate(zip(variables, champs)):
+                var_surface = police.render(variable, True, noir)
+                fenetre.blit(var_surface, (50, 50 + i * 70))
+
+                pygame.draw.rect(fenetre, couleur, champ, 0)
+                texte_surface = police.render(textes[i], True, noir)
+                largeur_texte = max(200, texte_surface.get_width() + 10)
+                champ.w = largeur_texte
+                fenetre.blit(texte_surface, (champ.x + 5, champ.y + 5))
 
             pygame.display.update()
 
@@ -711,4 +800,3 @@ GameWorld = World()
 NbDay = 50
 
 affichage = View()
-
