@@ -2,6 +2,8 @@
 GAMEPRINTS = False #Autoriser l'affichage des détails sur le terminal.
 TICKPRINTS = True #Autoriser l'affichage des détails des ticks sur le terminal.
 TICKSHOWBOBS = False #Autoriser l'affichage du nombre de bobs à chaque ticks sous forme de bâtons.
+AFFICHAGE = True
+
 
 ### Grille ###
 gridSizeX = 100 #Taille de la grille sur l'axe X.
@@ -62,3 +64,24 @@ tickMemoryPenalty = 0.2 # Pourcentage des points de perceptions pour conso d'en
 SeuilPredator = 2/3 # Seuil du quotient de masse pour distinguer predateur/proie
 
 
+### Images ###
+import pygame
+assets = {
+    "arriere_plan" : pygame.image.load("src/arrière_plan.jfif"),
+    "bob" : pygame.image.load("src/bob.png"),
+    "bob.blue" : pygame.image.load("src/bob.blue.png"),
+    "bob.rouge" : pygame.image.load("src/bob.rouge.png"),
+    "nourriture" : pygame.image.load("src/nourriture.png"),
+    "fond_ecran" : pygame.image.load("src/photo.png"),
+    "tile" : pygame.image.load("src/Tile32x32.png"),
+}
+
+### Colors ###
+bleu = (0, 0, 250)
+noir = (0, 0, 0)
+rouge = (250, 0, 0)
+vert = (0, 250, 0)
+blanc = (250, 250, 250)
+marron = (139, 69, 19)
+gridSize = 10
+police = pygame.font.Font(None, 36)

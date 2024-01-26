@@ -15,6 +15,7 @@ class World():
     def __init__(self) :
         self.lastID = -1 #identifiant unique pour chaque bob créé.
         self.pause = False #pour mettre sur pause le jeu.
+        self.affichage = AFFICHAGE
         self.gridBob = {} #Dictionnaire de bobs.
         self.gridFood = {} #Dictionnaire d'élements Foods
         self.bobArray=[] #Tableau de bob utilisé à chaque tour pour parcourir l'esemble des bobs de façon aléatoire.
@@ -22,6 +23,7 @@ class World():
         self.dayCounter=0 #Compteur du nombre de jour.
         self.tickCounter=0 #Compteur du nombre de ticks.
         self.bobSpawn() #Générer les bobs à l'initialisation du jeu.
+        self.guis = [] # Tableau des GUI
         #statistiques de la forme (min, max, moyenne)
         self.statEnergy = [None, None, None] #statistique d'énergie
         self.statMass = [None, None, None] #statistique de masse

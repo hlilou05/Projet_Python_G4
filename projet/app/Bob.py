@@ -1,5 +1,48 @@
 from random import *
 from Constant import *
+from GUI import *
+
+
+class GraphicBob(GUI):
+    def __init__(self, game, bob):
+        super().__init__(game)
+        self.bob = bob
+
+        # setup UI elements
+        self.frame = Frame(self, 0, 0, 250, 300, (64, 64, 64))
+        self.entity = Text(self, 10, 10, text="Bob")
+
+        self.energy = Text(self, 10, 50, text="Energy: 100", fontSize=20)
+        self.velocity = Text(self, 10, 80, text="Velocity: 1.6", fontSize=20)
+        self.mass = Text(self, 10, 110, text="Mass: 10", fontSize=20)
+        self.perception = Text(self, 10, 140, text="Perception: 3", fontSize=20)
+
+        self.visible = False
+
+    def update(self):
+        if self.visible:
+            if self.game.affichage:
+                self.visible = False
+        mx, my = pygame.mouse.get_pos()
+        if not pygame.Rect(mx-50, my-50, 100, 10).colliderect(self.bob.rect):
+            self.visible = False
+
+        self.set_position(self.bob.get_position()[0], self.bob.get_position()[1])
+
+        self.draw_element(self.frame)
+        self.draw_element(self.entity)
+
+        self.energy.set_text(f"Energy: {int(self.bob.energy)}/{self.bob.maxEnergy}")
+        self.velocity.set_text(f"Velocity: {self.bob.velocity}")
+        self.mass.set_text(f"Mass: {self.bob.mass}")
+        self.perception.set_text(f"Perception: {self.bob.perception}")
+        self.draw_element(self.velocity)
+        self.draw_element(self.mass)
+        self.draw_element(self.energy)
+        self.draw_element(self.perception)
+
+
+
 
 class Bob:
     """
@@ -24,9 +67,24 @@ class Bob:
         self.seen = {}
         self.fuite = False
         self.bufvelo = 0.00
-
+        self.image = assets["bob"]
+        self.gui = GraphicBob(self.game, self)
+        self.game.add_gui(self.gui)
 
     #FONCTIONS DU BOB : hunt, eat, partheno, fuck, Move.
+        
+
+    def choose_image(self):
+        
+        self.image = assets["bob"]
+
+        if self.velocity >= 1.2 and self.velocity < 1.6:
+            self.image = assets["bob.blue"]
+        elif self.velocity > 2 :
+            self.image = assets["bob.rouge"]
+
+
+
         
     def Val_Mutation(TauxMut, Val):
         return (random.uniform(Val*(1-TauxMut), Val*(1+TauxMut)))

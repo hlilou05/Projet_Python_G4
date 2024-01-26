@@ -469,7 +469,7 @@ class Tile:
     def __init__(self, x, y):
         self.image = pygame.image.load("Tile32x32.png")
         self.rect = self.image.get_rect(center=(x, y))
-    
+
 class GraphicBob():
     def __init__(self):
         self.image = pygame.image.load("bob.png")

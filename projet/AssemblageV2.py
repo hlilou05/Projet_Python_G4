@@ -537,7 +537,7 @@ class View:
                 x+=TILE_SIZE/2 #coordonnée centre de la case
                 x+=BOB_SIZE/4 #Coordonnée top left du bob
                 y+=TILE_SIZE/5 #coordonnée de la hauteur du bob.
-                self.screen.blit(pygame.transform.scale_by(self.GBob.image,self.zoom), (x,y))
+                self.screen.blit(pygame.transform.scale_by(bob.image,self.zoom), (x,y))
 
 
     def update_food(self):
