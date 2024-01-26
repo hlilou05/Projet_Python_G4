@@ -2,6 +2,8 @@ from random import *
 from time import *
 from threading import Thread
 import pickle
+import pygame
+import sys
 
 
 import Bob

@@ -26,9 +26,8 @@ class Bob:
         self.bufvelo = 0.00
 
 
-    #FONCTIONS DU BOB : hunt, eat, partheno, fuck, randomMove.
-    #parametre recu pour chaque fonction : La case dans laquelle se trouve le bob.
-
+    #FONCTIONS DU BOB : hunt, eat, partheno, fuck, Move.
+        
     def Val_Mutation(TauxMut, Val):
         return (random.uniform(Val*(1-TauxMut), Val*(1+TauxMut)))
 
