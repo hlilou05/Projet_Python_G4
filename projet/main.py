@@ -1,6 +1,7 @@
 from app.World import *
 
 def main():
+        
     GameWorld = World()
     GAME = Thread(target=GameWorld.play, args=[NbDay])
     #PAUSE = Thread(target=GameWorld.pauseGame, args=[]) 

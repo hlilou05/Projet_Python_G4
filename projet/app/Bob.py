@@ -7,8 +7,9 @@ class Bob:
     Define size, speed, energy...
     Define functions...
     """
-    def __init__(self, jeu, ID, coord) :
-        self.jeu
+
+    def __init__(self, game, ID, coord) :
+        self.game = game
         self.ID = ID
         self.mass = InitMass
         self.velocity = InitVelocity
@@ -65,9 +66,9 @@ class Bob:
         """
         Fonction utilisée pour supprimer correctement un bob décédé.
         """
-        self.jeu.gridBob[self.coord].remove(self) #suppression du bob du tableau associé à ses coordonnées dans le dictionnaire gridBob.
-        if self in self.jeu.bobArray : self.jeu.bobArray.remove(self) #Retirer le bob du tableau bobArray qui contient les bobs qui doivent jouer leur coup au tick présent. 
-        if len(self.jeu.gridBob[self.coord])==0: del(self.jeu.gridBob[self.coord]) #Si le tableau est vide, alors on supprime la case du dictionnaire.
+        self.game.gridBob[self.coord].remove(self) #suppression du bob du tableau associé à ses coordonnées dans le dictionnaire gridBob.
+        if self in self.game.bobArray : self.game.bobArray.remove(self) #Retirer le bob du tableau bobArray qui contient les bobs qui doivent jouer leur coup au tick présent. 
+        if len(self.game.gridBob[self.coord])==0: del(self.game.gridBob[self.coord]) #Si le tableau est vide, alors on supprime la case du dictionnaire.
         return
 
     def hunt(self):

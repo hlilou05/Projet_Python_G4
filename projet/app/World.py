@@ -1,6 +1,8 @@
 from random import *
 from time import *
 from threading import Thread
+import pickle
+
 
 import Bob
 from Constant import *
@@ -134,23 +136,6 @@ class World():
             self.statPerception[2] = round(self.statPerception[2], 2)
             self.statMemory[2] = round(self.statMemory[2], 2)
         return
-    
-    def printStatistics(self):
-        """
-        Fonction qui affiche les statistiques du jeu.
-        """
-        print("Statistiques du jeu :")
-        print("\t Nombre de bobs :", self.bobcount)
-        print("\t vitesse :", self.statVelocity)
-        print("\t mass :", self.statMass)
-        print("\t energy :", self.statEnergy)
-        print("\t perception :", self.statPerception)
-        print("\t memory :", self.statMemory)
-        return
-    
-    def saveTheGame(self): #enregistre le jeu actuel dans le document jeu.data
-        return
-
 
     def makeBobArray(self):
         """
@@ -164,7 +149,6 @@ class World():
                 bob.coord=key
         self.bobcount=len(self.bobArray)
         return
-
 
     def tick(self):
         """
@@ -191,7 +175,6 @@ class World():
             for _ in range(self.bobcount): print("|", end = "")
             print()
         return
-    
 
 
     def day(self):
@@ -204,12 +187,34 @@ class World():
         self.statistics()
         if self.bobcount!=0 :
             print()
-            print("DAY", self.dayCounter)
             self.foodSpawn()
             for _ in range (ticksPerDay):
+                self.auto_save()
                 while self.pause == True : continue # pour mettre sur pause.
                 self.tick()
 
     def play(self, NbDay):
         for _ in range (NbDay) :
             self.day()
+
+    def sauvegarde(self, file):
+        file = "../__pycache__/" + file + ".pyc"
+        with open(file, 'wb') as f:
+            pickle.dump(self, f, 3)
+            f.close()
+        return
+    
+    def auto_save(self):
+        with open("../__pycache__/autosave", 'wb') as f:
+            pickle.dump(self, f, 3)
+            f.close()
+        return
+    
+    def load_sauvegarde(self, file):
+        file = "../__pycache__/" + file + ".pyc"
+        with open(file, "rd") as f:
+            saved = pickle.load(f)
+            f.close()
+        self = saved
+        return
+    
