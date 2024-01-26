@@ -5,6 +5,7 @@ TICKSHOWBOBS = False #Autoriser l'affichage du nombre de bobs à chaque ticks so
 AFFICHAGE = True
 
 
+
 ### Grille ###
 gridSizeX = 100 #Taille de la grille sur l'axe X.
 gridSizeY = 100 #Taille de la grille sur l'axe Y. 
@@ -85,3 +86,6 @@ blanc = (250, 250, 250)
 marron = (139, 69, 19)
 gridSize = 10
 police = pygame.font.Font(None, 36)
+
+### Dictionnaire Options Game ###
+option = {"gridSizeX" : gridSizeX,}

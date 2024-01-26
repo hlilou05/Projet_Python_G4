@@ -8,11 +8,13 @@ import sys
 
 import Bob
 from Constant import *
-
+import Window
 
 
 class World():
     def __init__(self) :
+        self.options = option
+        self.window = Window(self)
         self.lastID = -1 #identifiant unique pour chaque bob créé.
         self.pause = False #pour mettre sur pause le jeu.
         self.affichage = AFFICHAGE
@@ -221,4 +223,10 @@ class World():
             f.close()
         self = saved
         return
+    
+    def iso_coord(self, x, y):
+        """
+        Génération de coordonnées isométriques à partir de coordonnées 2D.
+        """
+        return [x-y, (x+y)/2]
     

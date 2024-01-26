@@ -354,4 +354,15 @@ class Bob:
                         maxfood = bob[1]
             if currenttarget != None:
                 return self.move_towards_coord(currenttarget)
+            
+    def update_bobs(self):
+        TILE_SIZE = 16*self.game.zoom
+        BOB_SIZE = 10*self.game.zoom
+        for key in self.game.gridBob:
+            for bob in self.game.gridBob[key]:
+                (x,y)=self.game.isoCoordTable[key] #coordonnées Top Left de la case
+                x+=TILE_SIZE/2 #coordonnée centre de la case
+                x+=BOB_SIZE/4 #Coordonnée top left du bob
+                y+=TILE_SIZE/5 #coordonnée de la hauteur du bob.
+                self.screen.surface_bob.blit(pygame.transform.scale_by(self.image,self.game.zoom), (x,y))
                 
