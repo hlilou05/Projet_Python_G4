@@ -1,15 +1,12 @@
 import pygame
-from app.World import World
-from app.Window import Window
+from app.World import *
+from app.Window import *
 
 def main():
     pygame.init()
     game = World()
-    screen = Window(game)
-    screen.display_menu()
-    while game.isRunning:
-        game.run_game()
-    pygame.quit()
+    game.run_game()
 
 if __name__ == "__main__":
     main()
+

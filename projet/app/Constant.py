@@ -3,6 +3,7 @@ GAMEPRINTS = False #Autoriser l'affichage des détails sur le terminal.
 TICKPRINTS = True #Autoriser l'affichage des détails des ticks sur le terminal.
 TICKSHOWBOBS = False #Autoriser l'affichage du nombre de bobs à chaque ticks sous forme de bâtons.
 AFFICHAGE = True
+TICKTIME = 5
 
 
 

@@ -39,21 +39,34 @@ actif_champ = None
 
 
 class Window:
+
+
     def __init__(self,myGame):
         self.game = myGame
         self.infoObject = pygame.display.Info()
         self.screen = pygame.display.set_mode((self.infoObject.current_w - 600, self.infoObject.current_h - 600))
         self.running = True
         self.zoom = 1
+        self.isoCoordTable = {}
         self.offsetx = 0
         self.offsety = 0
         self.value = 20
+        self.pages = []
+        self.screen.fill("WHITE")
         self.current_page = 0  # Ajout d'une variable pour suivre la page actuelle
         self.menu_active = True
+        self.current_page = 0
         self.game_active = False  # Ajout d'une variable pour indiquer si le jeu est actif
         self.suivant_pressed = False
+        self.pages.append(self.display_menu)
+        self.pages.append(self.affiche_formulaire)
+        self.pages.append(self.affiche_deuxieme_page)
+        self.screen.fill((255,255,255))
         self.surfacebob = pygame.Surface((self.infoObject.current_w-200, self.infoObject.current_h-200),pygame.SRCALPHA, 32).convert_alpha()
         self.surfacetile = pygame.Surface((self.infoObject.current_w-200, self.infoObject.current_h-200),pygame.SRCALPHA, 32).convert_alpha()
+      
+        self.run()
+        self.display_menu()
 
     def afficher_texte(self,texte, x, y):
         texte_surface = police.render(texte, True, blanc)
@@ -77,6 +90,10 @@ class Window:
                             self.menu_active = False
                             self.game_active = True
                             self.run_game()
+                            self.display_tiles()
+
+                            self.display()
+
                         elif 300 <= y <= 350:
                             print("Options")
                             variables = ['GridSizeX', 'GridSizeY', 'TicksPerDay', 'BobsQty', 'FoodQty', 'EnergyInitLevel', 'MaxEnergy', 'InitPerception']
@@ -177,14 +194,27 @@ class Window:
                 elif event.key == pygame.K_RIGHT:
                     self.offsetx += 1
     def affiche_deuxieme_page(self):
-        # Code pour afficher la deuxième page
-        # Utilisez une nouvelle liste de variables et champs pour la deuxième page
-        self.suivant_pressed = False 
-        variables_page2 = ['Variable1', 'Variable2', 'Variable3', 'Variable4']
-        champs_page2 = [pygame.Rect(300, 50 + i * 70, 300, 50) for i in range(len(variables_page2))]
+        global couleur_inactive
+        global actif_champ
+        global textes
+        global couleur_page2
+
+        # Charger l'image de fond
+        background = assets["arriere_plan"]
+        background = pygame.transform.scale(background, (fenetre.get_width(), fenetre.get_height()))
+        fenetre.blit(background, (0, 0))
+
+        variables_page2 = ['InitVelocity', 'InitMemory', 'InitMass', 'TauxMutationMass', 'TauxMutationVelocity',
+                        'TauxMutationMemory', 'TauxMutationPerception']
+        champs_page2 = [pygame.Rect(345, 50 + i * 70, 300, 50) for i in range(len(variables_page2))]
         textes_page2 = [''] * len(variables_page2)
         couleur_page2 = couleur_inactive
         actif_champ_page2 = None
+
+        # Ajouter le bouton "Retour"
+        retour_button = pygame.Rect(largeur - 150, hauteur - 100, 100, 50)
+        pygame.draw.rect(fenetre, rouge, retour_button)
+        self.afficher_texte("Retour", largeur - 100, hauteur - 75)
 
         while True:
             for event in pygame.event.get():
@@ -192,6 +222,11 @@ class Window:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = pygame.mouse.get_pos()
+                    if retour_button.collidepoint(x, y):
+                        self.suivant_pressed = False  # Assurez-vous que suivant_pressed est réinitialisé
+                        return  # Quitter la fonction pour revenir à la page précédente
+
                     for i, champ in enumerate(champs_page2):
                         if champ.collidepoint(event.pos):
                             actif_champ_page2 = i
@@ -209,8 +244,6 @@ class Window:
                         else:
                             textes_page2[actif_champ_page2] += event.unicode
 
-            # Affichage de la deuxième page
-            fenetre.fill("WHITE")
             for i, (variable, champ) in enumerate(zip(variables_page2, champs_page2)):
                 var_surface = police.render(variable, True, noir)
                 fenetre.blit(var_surface, (50, 50 + i * 70))
@@ -222,6 +255,7 @@ class Window:
                 fenetre.blit(texte_surface, (champ.x + 5, champ.y + 5))
 
             pygame.display.update()
+
     def affiche_formulaire(self, variables):
         global couleur
         global actif_champ
@@ -234,7 +268,7 @@ class Window:
             var_surface = police.render(variable, True, noir)
             fenetre.blit(var_surface, (50, 50 + i * 70))
 
-            pygame.draw.rect(fenetre, couleur, champ, 2)
+            pygame.draw.rect(fenetre, couleur, champ, 0)  # Ajustez la largeur de la bordure à 0 pour éviter la division en 2
             texte_surface = police.render(textes[i], True, noir)
             largeur_texte = max(200, texte_surface.get_width() + 10)
             champ.w = largeur_texte
@@ -243,9 +277,9 @@ class Window:
         retour_button = pygame.Rect(largeur - 150, hauteur - 100, 100, 50)
         pygame.draw.rect(fenetre, rouge, retour_button)
         self.afficher_texte("Retour", largeur - 100, hauteur - 75)
-        suivant_button = pygame.Rect(largeur - 300, hauteur - 100, 100, 50)
+        suivant_button = pygame.Rect(largeur - 150, hauteur - 175, 100, 50)
         pygame.draw.rect(fenetre, vert, suivant_button)
-        self.afficher_texte("Suivant", largeur - 250, hauteur - 75)
+        self.afficher_texte("Suivant", largeur - 100, hauteur - 150)
         pygame.display.flip()
 
         while not self.suivant_pressed:
@@ -265,54 +299,59 @@ class Window:
                     if suivant_button.collidepoint(event.pos):
                         self.suivant_pressed = True  # Définir suivant_pressed à True et quitter la boucle
 
-                    if event.type == pygame.KEYDOWN:
-                        if actif_champ is not None:
-                            if event.key == pygame.K_RETURN:
-                                print("Variable {}: {}".format(actif_champ + 1, textes[actif_champ]))
-                                textes[actif_champ] = ''
-                            elif event.key == pygame.K_BACKSPACE:
-                                textes[actif_champ] = textes[actif_champ][:-1]
-                            else:
-                                textes[actif_champ] += event.unicode
+                if event.type == pygame.KEYDOWN:
+                    if actif_champ is not None:
+                        if event.key == pygame.K_RETURN:
+                            print("Variable {}: {}".format(actif_champ + 1, textes[actif_champ]))
+                            textes[actif_champ] = ''
+                        elif event.key == pygame.K_BACKSPACE:
+                            textes[actif_champ] = textes[actif_champ][:-1]
+                        else:
+                            textes[actif_champ] += event.unicode
 
+            # Afficher le texte entré dans chaque champ
+            for i, (variable, champ) in enumerate(zip(variables, champs)):
+                var_surface = police.render(variable, True, noir)
+                fenetre.blit(var_surface, (50, 50 + i * 70))
+
+                pygame.draw.rect(fenetre, couleur, champ, 0)
+                texte_surface = police.render(textes[i], True, noir)
+                largeur_texte = max(200, texte_surface.get_width() + 10)
+                champ.w = largeur_texte
+                fenetre.blit(texte_surface, (champ.x + 5, champ.y + 5))
             pygame.display.update()
-
         self.affiche_deuxieme_page()  # Appeler la méthode pour afficher la deuxième page
 
 
     def run_game(self):
         while self.game_active:
             self.Actualise_user_input()
-
+            self.screen.fill("WHITE")
             self.display()
             pygame.display.update()
             sleep(0.01)
+
+            # Ajoutez cette condition pour vérifier si le jeu est toujours actif
+            if not self.game_active:
+                break
+
     def run(self):
         while self.running:
-            if self.menu_active:
-                self.display_menu()
-            elif self.game_active:
-                self.run_game()
-            else:
-                # Autres états ou traitements si nécessaire
-                pass
+            self.pages[self.current_page]()
+    
     def display(self):
-        # Mise à jour des surfaces
-        self.surfacebob.fill((0, 0, 0, 0))
+        pygame.display.update()
+        self.screen.fill((255,255,255))
+        self.surfacebob.fill((0,0,0,0))
         self.game.update_bobs()
         self.game.update_food()
         self.surfacebob.set_alpha(255)
         self.blit_surfacetile_screen()
         self.blit_surfacebob_screen()
 
-        # Affichage de la fenêtre
-       
-        self.screen.blit(self.surfacetile, (0, 0))
-        self.screen.blit(self.surfacebob, (0, 0))
 
-        # Affichage du contenu de l'écran
-        pygame.display.update()
-
+    def init_game(self):
+        self.game.init_world()
 
     def blit_surfacebob_screen(self):
         self.screen.blit(self.surfacebob, (0, 0))
