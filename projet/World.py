@@ -1,43 +1,38 @@
 from random import *
 from time import *
+from threading import Thread
 import pickle
 import pygame
-import os
+import sys
+from Constant import *
 
 
-from .Bob import *
-from .Constant import *
-from .Window import *
-from .Tile import *
+import Bob
+
 
 
 class World():
     def __init__(self) :
-        self.isRunning = True
-        self.isoCoordTable = {}
         self.window = Window(self)
-        self.tile = Tile(self)
-        self.guis = [] # Tableau des GUI
-        self.options = option
         self.lastID = -1 #identifiant unique pour chaque bob créé.
         self.pause = False #pour mettre sur pause le jeu.
-        self.affichage = AFFICHAGE # Affichage On/Off
+        self.affichage = AFFICHAGE
         self.gridBob = {} #Dictionnaire de bobs.
         self.gridFood = {} #Dictionnaire d'élements Foods
         self.bobArray=[] #Tableau de bob utilisé à chaque tour pour parcourir l'esemble des bobs de façon aléatoire.
-        self.bobcount= 0 #Compteur du nombre de bobs en vie.
+        self.bobcount=bobsQty #Compteur du nombre de bobs en vie.
         self.dayCounter=0 #Compteur du nombre de jour.
-        self.tickCounter=0 #Compteur du nombre de tick
-        self.tile.generate_tiles()
-        self.window.blit_surfacetile_screen()
+        self.tickCounter=0 #Compteur du nombre de ticks.
         self.bobSpawn() #Générer les bobs à l'initialisation du jeu.
-        self.imageFood = assets["food"]
+        self.guis = [] # Tableau des GUI
         #statistiques de la forme (min, max, moyenne)
         self.statEnergy = [None, None, None] #statistique d'énergie
         self.statMass = [None, None, None] #statistique de masse
         self.statVelocity = [None, None, None] #statistique de vitesse
         self.statPerception = [None, None, None] #statistique de perception
         self.statMemory = [None, None, None] #statistique de mémoire
+
+
         
     def gamePrint(self, msg):
         if GAMEPRINTS : print(msg)
@@ -70,7 +65,7 @@ class World():
             y = randint(0, gridSizeY-1)
             if (x, y) not in self.gridBob : self.gridBob[(x, y)]=[]
             mybob=Bob(self, self.lastID+1, (x,y))
-            mybob.add_bob_to_grid()
+            self.gridBob[(x, y)].append(mybob)
         return
 
     def foodSpawn(self):
@@ -93,6 +88,7 @@ class World():
         self.statVelocity = [0, 0, 0] #statistique de vitesse
         self.statPerception = [0, 0, 0] #statistique de perception
         self.statMemory = [0, 0, 0] #statistique de mémoire
+        self.bobcount = 0
         for key in self.gridBob:
             for bob in self.gridBob[key]:
                 if(self.bobcount == 0) :
@@ -105,9 +101,9 @@ class World():
                     self.statVelocity[0] = bob.velocity
                     self.statVelocity[1] = bob.velocity
                     self.statVelocity[2] += bob.velocity
-                    self.statPerception[0] = bob.perceptionScore
-                    self.statPerception[1] = bob.perceptionScore
-                    self.statPerception[2] += bob.perceptionScore
+                    self.statPerception[0] = bob.perception
+                    self.statPerception[1] = bob.perception
+                    self.statPerception[2] += bob.perception
                     self.statMemory[0] = bob.memory
                     self.statMemory[1] = bob.memory
                     self.statMemory[2] += bob.memory
@@ -122,9 +118,9 @@ class World():
                     self.statVelocity[0] = min(self.statVelocity[0], bob.velocity)
                     self.statVelocity[1] = max(self.statVelocity[1], bob.velocity)
                     self.statVelocity[2] += bob.velocity
-                    self.statPerception[0] = min(self.statPerception[0], bob.perceptionScore)
-                    self.statPerception[1] = max(self.statPerception[1], bob.perceptionScore)
-                    self.statPerception[2] += bob.perceptionScore
+                    self.statPerception[0] = min(self.statPerception[0], bob.perception)
+                    self.statPerception[1] = max(self.statPerception[1], bob.perception)
+                    self.statPerception[2] += bob.perception
                     self.statMemory[0] = min(self.statMemory[0], bob.memory)
                     self.statMemory[1] = max(self.statMemory[1], bob.memory)
                     self.statMemory[2] += bob.memory
@@ -157,6 +153,8 @@ class World():
         for key in self.gridBob:
             for bob in self.gridBob[key]:
                 self.bobArray.append(bob)
+                bob.coord=key
+        self.bobcount=len(self.bobArray)
         return
 
     def tick(self):
@@ -167,97 +165,63 @@ class World():
         """
         self.makeBobArray() #A chaque tick on créé le tableau bobArray de tous les bobs encore en vie.#printGridBob()
         self.tickCounter += 1
-        print(self.bobcount)
+        if TICKPRINTS : print("tick", self.tickCounter, " : ", self.bobcount, "Bobs alive.")
         while len(self.bobArray)!=0 :
-            self.window.display()
-            self.window.Actualise_UserInput()
-            if self.pause : continue
             bob = choice(self.bobArray)
             self.bobArray.remove(bob)
             assert bob in self.gridBob[bob.coord]
-            self.update_guis()
-            if not bob.isDead : bob.perception()
-            if not bob.isDead : bob.use_memory()
+            bob.perception()
+            bob.memory()
             #Choix d'une action :
             if not bob.hunt(): #Eat food
                 if not bob.eat(): #Hunt other bobs
                     if not bob.fuck(): #Fuck
                         bob.move() #Move randomly
+
+        if TICKSHOWBOBS :
+            for _ in range(self.bobcount): print("|", end = "")
+            print()
         return
 
 
     def day(self):
+        """
+        Fonction qui lance la simulation d'un "Day"
+        Permet de mettre sur pause le jeu à tout moment entre deux ticks.
+        Met a jour les statistiques à chaque début de jour"""
         self.dayCounter += 1
         self.tickCounter = 0
-        # self.statistics()
+        self.statistics()
         if self.bobcount!=0 :
+            print()
             self.foodSpawn()
             for _ in range (ticksPerDay):
-                #self.auto_save()
-                if self.bobcount == 0 : self.isRunning = False
+                self.auto_save()
+                while self.pause == True : continue # pour mettre sur pause.
                 self.tick()
-        else : self.isRunning = False
-
-    def run_game(self):
-        pygame.display.update()
-        self.day()
 
     def play(self, NbDay):
         for _ in range (NbDay) :
             self.day()
 
     def sauvegarde(self, file):
-        file = os.path.abspath("__pycache__/" + file + ".pyc")
+        file = "../__pycache__/" + file + ".pyc"
         with open(file, 'wb') as f:
             pickle.dump(self, f, 3)
             f.close()
         return
     
     def auto_save(self):
-        with open(os.path.abspath("__pycache__/autosave"), 'wb') as f:
+        with open("../__pycache__/autosave", 'wb') as f:
             pickle.dump(self, f, 3)
             f.close()
         return
     
     def load_sauvegarde(self, file):
-        file = os.path.abspath("__pycache__/" + file + ".pyc")
+        file = "../__pycache__/" + file + ".pyc"
         with open(file, "rd") as f:
             saved = pickle.load(f)
             f.close()
         self = saved
         return
     
-    def iso_coord(self, x, y):
-        """
-        Génération de coordonnées isométriques à partir de coordonnées 2D.
-        """
-        
-        self.isoCoordTable[(x,y)] = (x-y, (x+y)/2)
-        return self.isoCoordTable[(x,y)]
-    
-                
-    def update_bobs(self):
-        for key in self.gridBob:
-            for bob in self.gridBob[key]:
-                bob.update_bob()
-
-    def update_food(self):
-        TILE_SIZE = 16*self.window.zoom
-        FOOD_SIZE = 13*self.window.zoom
-        for key in self.gridFood:
-            (x,y)=self.isoCoordTable[key] #coordonnées Top Left de la case
-            x+=TILE_SIZE/2 #coordonnée centre de la case
-            x+=FOOD_SIZE/4 #Coordonnée top left de la food
-            y+=TILE_SIZE/5 #coordonnée de la hauteur de la food.
-            self.window.surfacebob.blit(pygame.transform.scale(self.imageFood, (int(self.imageFood.get_width() * self.window.zoom), int(self.imageFood.get_height() * self.window.zoom))), (x,y))
-    
-    def add_gui_to_list(self, gui):
-        self.guis.append(gui)
-
-    def remove_gui_from_list(self, gui):
-        if gui in self.guis :
-            self.guis.remove(gui)
-
-    def update_guis(self):
-        for gui in self.guis :
-            gui.update()

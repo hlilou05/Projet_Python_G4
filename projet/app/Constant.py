@@ -13,7 +13,7 @@ gridSizeY = 100 #Taille de la grille sur l'axe Y.
 ### Ticks and game ###
 ticksPerDay = 100 #Nombre de Ticks par jour
 bobsQty = 100 #quantité initiale de Bobs.
-foodQty = 100 #quantité d'items Food générés par jours
+foodQty = 1000  #quantité d'items Food générés par jours
 NbDay = 50 #Nombre de jour à jouer
 
 
@@ -67,14 +67,15 @@ SeuilPredator = 2/3 # Seuil du quotient de masse pour distinguer predateur/proie
 
 ### Images ###
 import pygame
+import os
 assets = {
-    "arriere_plan" : pygame.image.load("src/arrière_plan.jfif"),
-    "bob" : pygame.image.load("src/bob.png"),
-    "bob.blue" : pygame.image.load("src/bob.blue.png"),
-    "bob.rouge" : pygame.image.load("src/bob.rouge.png"),
-    "nourriture" : pygame.image.load("src/nourriture.png"),
-    "fond_ecran" : pygame.image.load("src/photo.png"),
-    "tile" : pygame.image.load("src/Tile32x32.png"),
+    "arriere_plan" : pygame.image.load(os.path.abspath("src/arrière_plan.jfif")),
+    "bob" : pygame.image.load(os.path.abspath("src/bob.png")),
+    "bob.blue" : pygame.image.load(os.path.abspath("src/bob.blue.png")),
+    "bob.rouge" : pygame.image.load(os.path.abspath("src/bob.rouge.png")),
+    "food" : pygame.image.load(os.path.abspath("src/nourriture.png")),
+    "fond_ecran" : pygame.image.load(os.path.abspath("src/Photo.png")),
+    "tile" : pygame.image.load(os.path.abspath("src/Tile32x32.png")),
 }
 
 ### Colors ###
@@ -84,8 +85,6 @@ rouge = (250, 0, 0)
 vert = (0, 250, 0)
 blanc = (250, 250, 250)
 marron = (139, 69, 19)
-gridSize = 10
-police = pygame.font.Font(None, 36)
 
 ### Dictionnaire Options Game ###
 option = {"gridSizeX" : gridSizeX,}

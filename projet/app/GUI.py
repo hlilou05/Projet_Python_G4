@@ -1,5 +1,5 @@
 import pygame
-from Constant import *
+from .Constant import *
 
 
 # Class interface graphique

@@ -1,4 +1,5 @@
 import pygame
+import pygame._sdl2 as sdl2
 
 
 class Window:
@@ -6,83 +7,51 @@ class Window:
     Classe dédiée à l'affichage
     """
     def __init__(self, myGame):
-        self.Game = myGame
-        self.GBob = GraphicBob()
-        self.GFood = GraphicFood()
-        self.GTile = Tile()
+        self.game = myGame
         self.infoObject = pygame.display.Info()
-        self.screen = pygame.display.set_mode((self.infoObject.current_w-200,self.infoObject.current_h-200)) #Fenêtre du jeu.
+        self.screen = pygame.display.set_mode((self.infoObject.current_w-200,self.infoObject.current_h-200),  pygame.SCALED | pygame.RESIZABLE | sdl2.WINDOWPOS_CENTERED) #Fenêtre du jeu.
         self.isoCoordTable = {} #dictionnaire qui associe les coordonnées 2D des tiles à leurs coordonnées ISO. On l'utilisera pour placer les bobs exactement sur les tiles. (x réel , y réel) -> (x iso , y iso)
-        self.bobArray = [] #Tableau de bobs à afficher
-        self.foodArray = [] #Tableau de food à afficher
-        self.zoom = 1
         self.offsetx = 0
         self.offsety = 0
-        self.value = 20 #taille de la grille // A RELIER AVEC LES PARAMETRES
-        self.screen.fill("WHITE")
-        self.update_tiles()
-        self.Display()
-        #self.display_menu()
-
+        self.zoom = 1
+        self.value = 20 #taille de la grille // A RELIER AVEC LES PARAMETRES ## ???!!!
+        self.screen.fill((255,255,255))
+        self.surfacebob = pygame.Surface((self.infoObject.current_w-200, self.infoObject.current_h-200), pygame.SRCALPHA, 32).convert_alpha()
+        self.surfacetile = pygame.Surface((self.infoObject.current_w-200, self.infoObject.current_h-200), pygame.SRCALPHA, 32).convert_alpha()
+    
+    
+    
     def display_menu(self):
         #SI LE JOUEUR CLIQUE SUR START :
         self.display_tiles()
 
-    def Display(self):
-        """
-        Fonction qui actualise la grille avec le zoom et maintient l'affichage pendant toute la durée de l'execution.
-        """
-        self.Actualise_UserInput()
-        self.screen.fill("WHITE")
-        self.update_tiles()
-        self.update_bobs()
-        self.update_food()
+    def display(self):
         pygame.display.update()
-    
-    def iso_coord(self, x, y):
-        """
-        Génération de coordonnées isométriques à partir de coordonnées 2D.
-        """
-        return [x-y, (x+y)/2]
+        self.game.update_bobs()
+        self.game.update_food()
+        self.blit_surfacebob_screen()
 
-    def update_tiles(self):
-        """
-        Construction de la grille sur la fenêtre.
-        """
-        TILE_SIZE = 16*self.zoom
-        screen_x, screen_y = self.screen.get_size()
-        for y in range(gridSizeY):
-            for x in range(gridSizeX):
-                #création d'une new Tile
-                self.GTile.set_center(screen_x//4 + screen_y//2 + (x-gridSizeX//2)*TILE_SIZE , screen_y//2 - screen_x//4 + (y-gridSizeY//2)*TILE_SIZE)
-                #On sauvegarde la coordonnée isométrique de la case pour pouvoir replacer des bobs facilement dedans.
-                #Dictionnaire (x réel , y réel) -> (x iso , y iso)
-                self.isoCoordTable[(x, y)]  =  [self.iso_coord(self.GTile.rect.center[0], self.GTile.rect.center[1])[0]+self.offsetx*TILE_SIZE  ,  self.iso_coord(self.GTile.rect.center[0], self.GTile.rect.center[1])[1]+self.offsety*TILE_SIZE]
-                self.screen.blit(pygame.transform.scale_by(self.GTile.image,self.zoom), self.isoCoordTable[(x,y)])
+    def blit_surfacebob_screen(self):
+        s_w = self.screen.get_width()
+        s_h = self.screen.get_height()
+        su_w = self.surfacebob.get_width()
+        su_h = self.surfacebob.get_height()
 
+        x = (s_w - su_w) // 2
+        y = (s_h - su_h) // 2
 
-    def update_bobs(self):
-        TILE_SIZE = 16*self.zoom
-        BOB_SIZE = 10*self.zoom
-        for key in self.Game.gridBob:
-            for bob in self.Game.gridBob[key]:
-                (x,y)=self.isoCoordTable[key] #coordonnées Top Left de la case
-                x+=TILE_SIZE/2 #coordonnée centre de la case
-                x+=BOB_SIZE/4 #Coordonnée top left du bob
-                y+=TILE_SIZE/5 #coordonnée de la hauteur du bob.
-                self.screen.blit(pygame.transform.scale_by(self.GBob.image,self.zoom), (x,y))
+        self.screen.blit(self.surfacebob, (0, 0))
 
+    def blit_surfacetile_screen(self):
+        s_w = self.screen.get_width()
+        s_h = self.screen.get_height()
+        su_w = self.surfacetile.get_width()
+        su_h = self.surfacetile.get_height()
 
-    def update_food(self):
-        TILE_SIZE = 16*self.zoom
-        FOOD_SIZE = 13*self.zoom
-        for key in self.Game.gridFood:
-            (x,y)=self.isoCoordTable[key] #coordonnées Top Left de la case
-            x+=TILE_SIZE/2 #coordonnée centre de la case
-            x+=FOOD_SIZE/4 #Coordonnée top left de la food
-            y+=TILE_SIZE/5 #coordonnée de la hauteur de la food.
-            self.screen.blit(pygame.transform.scale_by(self.GFood.image,self.zoom), (x,y))
+        x = (s_w - su_w) // 2
+        y = (s_h - su_h) // 2
 
+        self.screen.blit(self.surfacetile, (0, 0))
 
     def Actualise_UserInput(self):
         """
@@ -99,9 +68,6 @@ class Window:
                 else :
                     if self.zoom <= 0.5 : break
                     else : self.zoom-=0.15
-                self.screen.fill("WHITE")
-                self.update_tiles()
-                self.update_bobs()
             #Appui clavier
             if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_i: #touche i -> zoom in
@@ -119,8 +85,5 @@ class Window:
                     elif event.key == pygame.K_LEFT: #touche flèche gauche
                         self.offsetx += 1 
                     elif event.key == pygame.K_SPACE: #touche espace
-                        self.Game.isPaused = not self.Game.isPaused
-                    self.screen.fill("WHITE")
-                    self.update_tiles()
-                    self.update_bobs()
+                        self.game.pause = not self.game.pause
         return

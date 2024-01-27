@@ -1,19 +1,12 @@
 from app.World import *
 
 def main():
-        
-    GameWorld = World()
-    GAME = Thread(target=GameWorld.play, args=[NbDay])
-    #PAUSE = Thread(target=GameWorld.pauseGame, args=[]) 
-
-    GAME.start()
-    #PAUSE.start()
-
-    #sleep(1)
-    GameWorld.pause=False
-    GAME.join()
-
-    GameWorld.printStatistics()
+    
+    pygame.init()
+    game = World()
+    while game.isRunning:
+        game.run_game()
+    pygame.quit()
 
 if __name__ == "__main__":
     main()
