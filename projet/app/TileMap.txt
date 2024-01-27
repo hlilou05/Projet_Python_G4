@@ -1,0 +1,31 @@
+from Constant import *
+import pygame
+
+
+class Tile():
+    """
+    Classe dédiée aux Tiles. 
+    Une Tile est un petit carreau de la grille
+    On définit ici sa taille et l'image qui la représentera.
+    """
+    def __init__(self, myGame):
+        self.Game = myGame
+        self.image = pygame.image.load("annexes/Tile32x32.png")
+        self.rect = self.image.get_rect()
+    def set_center(self, x, y):
+        self.rect.center=(x,y)
+
+    def update_tiles(self):
+        """
+        Construction de la grille sur la fenêtre.
+        """
+        TILE_SIZE = 16*self.zoom
+        screen_x, screen_y = self.screen.get_size()
+        for y in range(gridSizeY):
+            for x in range(gridSizeX):
+                #création d'une new Tile
+                self.set_center(screen_x//4 + screen_y//2 + (x-gridSizeX//2)*TILE_SIZE , screen_y//2 - screen_x//4 + (y-gridSizeY//2)*TILE_SIZE)
+                #On sauvegarde la coordonnée isométrique de la case pour pouvoir replacer des bobs facilement dedans.
+                #Dictionnaire (x réel , y réel) -> (x iso , y iso)
+                self.isoCoordTable[(x, y)]  =  [self.iso_coord(self.rect.center[0], self.rect.center[1])[0]+self.offsetx*TILE_SIZE  ,  self.iso_coord(self.rect.center[0], self.rect.center[1])[1]+self.offsety*TILE_SIZE]
+                self.screen.blit(pygame.transform.scale_by(self.image,self.zoom), self.isoCoordTable[(x,y)])
