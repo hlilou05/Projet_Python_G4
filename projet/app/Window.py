@@ -1,6 +1,6 @@
 import pygame
 import pygame._sdl2 as sdl2
-
+from time import sleep
 
 class Window:
     """
@@ -27,30 +27,17 @@ class Window:
 
     def display(self):
         pygame.display.update()
+        self.surfacebob.fill((0,0,0,0))
         self.game.update_bobs()
         self.game.update_food()
+        self.surfacebob.set_alpha(255)
+        self.blit_surfacetile_screen()
         self.blit_surfacebob_screen()
 
     def blit_surfacebob_screen(self):
-        s_w = self.screen.get_width()
-        s_h = self.screen.get_height()
-        su_w = self.surfacebob.get_width()
-        su_h = self.surfacebob.get_height()
-
-        x = (s_w - su_w) // 2
-        y = (s_h - su_h) // 2
-
         self.screen.blit(self.surfacebob, (0, 0))
 
     def blit_surfacetile_screen(self):
-        s_w = self.screen.get_width()
-        s_h = self.screen.get_height()
-        su_w = self.surfacetile.get_width()
-        su_h = self.surfacetile.get_height()
-
-        x = (s_w - su_w) // 2
-        y = (s_h - su_h) // 2
-
         self.screen.blit(self.surfacetile, (0, 0))
 
     def Actualise_UserInput(self):

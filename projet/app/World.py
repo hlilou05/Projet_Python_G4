@@ -168,8 +168,8 @@ class World():
         self.makeBobArray() #A chaque tick on créé le tableau bobArray de tous les bobs encore en vie.#printGridBob()
         self.tickCounter += 1
         print(self.bobcount)
+        self.window.display()
         while len(self.bobArray)!=0 :
-            self.window.display()
             self.window.Actualise_UserInput()
             if self.pause : continue
             bob = choice(self.bobArray)
@@ -199,7 +199,6 @@ class World():
         else : self.isRunning = False
 
     def run_game(self):
-        pygame.display.update()
         self.day()
 
     def play(self, NbDay):
