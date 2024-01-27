@@ -27,12 +27,14 @@ class Window:
 
     def display(self):
         pygame.display.update()
+        self.screen.fill((255,255,255))
         self.surfacebob.fill((0,0,0,0))
         self.game.update_bobs()
         self.game.update_food()
         self.surfacebob.set_alpha(255)
         self.blit_surfacetile_screen()
         self.blit_surfacebob_screen()
+
 
     def blit_surfacebob_screen(self):
         self.screen.blit(self.surfacebob, (0, 0))
@@ -46,7 +48,7 @@ class Window:
         Quit if the window is being shut down by the user"""
         for event in pygame.event.get():
             #Exit
-            if event.type == pygame.QUIT: self.Game.isRunning = False
+            if event.type == pygame.QUIT: self.game.isRunning = False
             #zoom souris
             if event.type == pygame.MOUSEWHEEL:
                 if event.y == 1 :

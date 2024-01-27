@@ -104,10 +104,10 @@ class Bob:
             babyBob = Bob(self.game, self.game.lastID+1, self.coord)
             
             babyBob.energy = birthParthenoEnergy
-            babyBob.mass = self.Val_Mutation(TauxMutationMass, self.mass)
+            babyBob.mass = int(self.Val_Mutation(TauxMutationMass, self.mass))
             babyBob.velocity = self.Val_Mutation(TauxMutationVelocity, self.velocity)
-            babyBob.memory = self.Val_Mutation(TauxMutationMemory, self.memory)
-            babyBob.perceptionScore = self.Val_Mutation(TauxMutationPerception, self.perceptionScore)
+            babyBob.memory = int(self.Val_Mutation(TauxMutationMemory, self.memory))
+            babyBob.perceptionScore = int(self.Val_Mutation(TauxMutationPerception, self.perceptionScore))
             babyBob.add_bob_to_grid
             self.consumeEnergy(parthenoMotherEnergy)
             return True
@@ -164,10 +164,10 @@ class Bob:
                 babyBob=Bob(self.game, self.game.lastID+1, self.coord)
                 babyBob.energy=birthSexEnergy
 
-                babyBob.mass = self.Val_Mutation(TauxMutationMass, (self.mass + myLover.mass)/2)
+                babyBob.mass = int(self.Val_Mutation(TauxMutationMass, (self.mass + myLover.mass)/2))
                 babyBob.velocity = self.Val_Mutation(TauxMutationVelocity, (self.velocity + myLover.velocity)/2)
-                babyBob.memory = self.Val_Mutation(TauxMutationMemory, (self.memory + myLover.memory)/2)
-                babyBob.perception = self.Val_Mutation(TauxMutationPerception, (self.perception + myLover.perceptionScore)/2)
+                babyBob.memory = int(self.Val_Mutation(TauxMutationMemory, (self.memory + myLover.memory)/2))
+                babyBob.perception = int(self.Val_Mutation(TauxMutationPerception, (self.perception + myLover.perceptionScore)/2))
 
                 babyBob.add_bob_to_grid()
                 self.game.bobArray.remove(myLover)
@@ -212,6 +212,7 @@ class Bob:
                         score += self.distance(i, j, x, y)    
                     scores[(i,j)] = score
                     score = 0
+
         return max(scores, keys=scores.get)
 
 
@@ -219,27 +220,26 @@ class Bob:
         (i, j) = self.coord
         (x, y) = coord
         velocity = int(self.velocity) + int(self.bufvelo)
-        if (x,y):
-            distance_to_coord = self.distance(i, j, x, y)
+        distance_to_coord = self.distance(i, j, x, y)
             
-            if distance_to_coord < velocity:
-                return (x, y)
+        if distance_to_coord <= velocity:
+            return (x, y)
             
-            else:
+        else:
 
-                dir_x = (x - i) / distance_to_coord
-                dir_y = (y - j) / distance_to_coord
+            dir_x = (x - i) / distance_to_coord
+            dir_y = (y - j) / distance_to_coord
 
-                if random.randint(0,1):
-                    mov_x = round(dir_x*velocity)
-                    mov_y = round(dir_y*(velocity - mov_x))
-                else :
-                    mov_y = round(dir_y*velocity)
-                    mov_x = round(dir_x*(velocity - mov_y))
+            if random.randint(0,1):
+                mov_x = round(dir_x*velocity)
+                mov_y = round(dir_y*(velocity - abs(mov_x)))
+            else :
+                mov_y = round(dir_y*velocity)
+                mov_x = round(dir_x*(velocity - (mov_y)))
 
-                i += mov_x
-                j += mov_y
-
+            i += mov_x
+            j += mov_y
+            
         return (i, j)
 
 
@@ -252,15 +252,14 @@ class Bob:
         MoveOk = False
         while not MoveOk:
             if random.randint(0,1):
-                move_x = random.uniform(max(0, x - velocity), min(gridSizeX - 1, x - int(velocity)))
-                move_y = random.uniform(max(0, y - (velocity - abs(move_x - x))), min(gridSizeY - 1, y - (velocity - abs(move_x - x))))
+                move_x = random.randint(max(0, x - velocity), min(gridSizeX - 1, x + velocity))
+                move_y = random.randint(max(0, y - (velocity - abs(move_x - x))), min(gridSizeY - 1, y + (velocity - abs(move_x - x))))
             else:
-                move_y = random.uniform(max(0, y - velocity), min(gridSizeY - 1, y - velocity))
-                move_x = random.uniform(max(0, x - (velocity - abs(move_y - y))), min(gridSizeX - 1, x - (velocity  - abs(move_y - y))))
+                move_y = random.randint(max(0, y - velocity), min(gridSizeY - 1, y + velocity))
+                move_x = random.randint(max(0, x - (velocity - abs(move_y - y))), min(gridSizeX - 1, x + (velocity  - abs(move_y - y))))
             if (move_x, move_y) not in self.path :
                 MoveOk = True
             if not Memory : MoveOk = True
-
         return (move_x, move_y)
 
     #Function perception to get all elements around
@@ -370,6 +369,10 @@ class Bob:
         else :
             return (-1, -1)
             
+    def set_center(self, x, y):
+        self.rect.center=(x,y)
+
+
     def update_bob(self):
 
         TILE_SIZE = 16*self.game.window.zoom
@@ -382,9 +385,10 @@ class Bob:
             self.gui.visible = True
         else:
             self.gui.visible = False
-
+        screen_x, screen_y = self.game.window.screen.get_size()
+        self.set_center(screen_x//4 + screen_y//2 + (self.coord[0]-gridSizeX//2)*TILE_SIZE , screen_y//2 - screen_x//4 + (self.coord[1]-gridSizeY//2)*TILE_SIZE)
         (x,y)=self.game.isoCoordTable[self.coord] #coordonnées Top Left de la case
-        x+=TILE_SIZE/2 #coordonnée centre de la case
-        x+=BOB_SIZE/4 #Coordonnée top left du bob
-        y+=TILE_SIZE/5 #coordonnée de la hauteur du bob.
+        x-=TILE_SIZE/2 #coordonnée centre de la case
+        x-=BOB_SIZE/4 #Coordonnée top left du bob
+        y-=TILE_SIZE/5 #coordonnée de la hauteur du bob.
         self.game.window.surfacebob.blit(pygame.transform.scale(self.image, (int(self.image.get_width() * self.game.window.zoom), int(self.image.get_height() * self.game.window.zoom))), (x,y))

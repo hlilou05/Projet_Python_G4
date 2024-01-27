@@ -3,17 +3,17 @@ GAMEPRINTS = False #Autoriser l'affichage des détails sur le terminal.
 TICKPRINTS = True #Autoriser l'affichage des détails des ticks sur le terminal.
 TICKSHOWBOBS = False #Autoriser l'affichage du nombre de bobs à chaque ticks sous forme de bâtons.
 AFFICHAGE = True
-
+TICKTIME = 5
 
 
 ### Grille ###
-gridSizeX = 100 #Taille de la grille sur l'axe X.
-gridSizeY = 100 #Taille de la grille sur l'axe Y. 
+gridSizeX = 50 #Taille de la grille sur l'axe X.
+gridSizeY = 50 #Taille de la grille sur l'axe Y. 
 
 ### Ticks and game ###
 ticksPerDay = 100 #Nombre de Ticks par jour
 bobsQty = 100 #quantité initiale de Bobs.
-foodQty = 1000  #quantité d'items Food générés par jours
+foodQty = 200  #quantité d'items Food générés par jours
 NbDay = 50 #Nombre de jour à jouer
 
 

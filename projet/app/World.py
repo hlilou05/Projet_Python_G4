@@ -10,6 +10,7 @@ from .Constant import *
 from .Window import *
 from .Tile import *
 
+clock = pygame.time.Clock()
 
 class World():
     def __init__(self) :
@@ -167,8 +168,7 @@ class World():
         """
         self.makeBobArray() #A chaque tick on créé le tableau bobArray de tous les bobs encore en vie.#printGridBob()
         self.tickCounter += 1
-        print(self.bobcount)
-        self.window.display()
+        if self.bobcount == 0 : return
         while len(self.bobArray)!=0 :
             self.window.Actualise_UserInput()
             if self.pause : continue
@@ -183,18 +183,20 @@ class World():
                 if not bob.eat(): #Hunt other bobs
                     if not bob.fuck(): #Fuck
                         bob.move() #Move randomly
+        self.window.display()
+        clock.tick(TICKTIME)
         return
 
 
     def day(self):
-        self.dayCounter += 1
-        self.tickCounter = 0
         # self.statistics()
         if self.bobcount!=0 :
+            self.dayCounter += 1
+            self.tickCounter = 0
+
             self.foodSpawn()
             for _ in range (ticksPerDay):
                 #self.auto_save()
-                if self.bobcount == 0 : self.isRunning = False
                 self.tick()
         else : self.isRunning = False
 
