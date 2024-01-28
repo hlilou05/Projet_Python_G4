@@ -64,8 +64,7 @@ class Window:
         self.screen.fill((255,255,255))
         self.surfacebob = pygame.Surface((self.infoObject.current_w-200, self.infoObject.current_h-200),pygame.SRCALPHA, 32).convert_alpha()
         self.surfacetile = pygame.Surface((self.infoObject.current_w-200, self.infoObject.current_h-200),pygame.SRCALPHA, 32).convert_alpha()
-      
-        self.run()
+
         self.display_menu()
 
     def afficher_texte(self,texte, x, y):
@@ -89,9 +88,7 @@ class Window:
                             print("Start")
                             self.menu_active = False
                             self.game_active = True
-                            self.run_game()
-                            self.display_tiles()
-
+                        
                             self.display()
 
                         elif 300 <= y <= 350:
@@ -323,17 +320,7 @@ class Window:
         self.affiche_deuxieme_page()  # Appeler la méthode pour afficher la deuxième page
 
 
-    def run_game(self):
-        while self.game_active:
-            self.Actualise_user_input()
-            self.screen.fill("WHITE")
-            self.display()
-            pygame.display.update()
-            sleep(0.01)
 
-            # Ajoutez cette condition pour vérifier si le jeu est toujours actif
-            if not self.game_active:
-                break
 
     def run(self):
         while self.running:
@@ -350,8 +337,6 @@ class Window:
         self.blit_surfacebob_screen()
 
 
-    def init_game(self):
-        self.game.init_world()
 
     def blit_surfacebob_screen(self):
         self.screen.blit(self.surfacebob, (0, 0))
