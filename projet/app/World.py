@@ -19,18 +19,17 @@ class World():
         self.window = Window(self)
         self.tile = Tile(self)
         self.guis = [] # Tableau des GUI
-        self.options = option
+        self.options = options
         self.lastID = -1 #identifiant unique pour chaque bob créé.
         self.pause = False #pour mettre sur pause le jeu.
         self.affichage = AFFICHAGE # Affichage On/Off
-        self.gridBob  =  {} #Dictionnaire de bobs.
+        self.gridBob = {} #Dictionnaire de bobs.
         self.gridFood = {} #Dictionnaire d'élements Foods
         self.bobArray=[] #Tableau de bob utilisé à chaque tour pour parcourir l'esemble des bobs de façon aléatoire.
         self.bobcount= 0 #Compteur du nombre de bobs en vie.
         self.dayCounter=0 #Compteur du nombre de jour.
         self.tickCounter=0 #Compteur du nombre de tick
         self.tile.generate_tiles()
-        self.window.blit_surfacetile_screen()
         self.bobSpawn() #Générer les bobs à l'initialisation du jeu.
         self.imageFood = assets["food"]
         #statistiques de la forme (min, max, moyenne)
@@ -70,7 +69,7 @@ class World():
             x = randint(0, gridSizeX-1)
             y = randint(0, gridSizeY-1)
             if (x, y) not in self.gridBob : self.gridBob[(x, y)]=[]
-            mybob=Bob(self, self.lastID+1, (x,y))
+            mybob=Bob(self, self.lastID, (x,y))
             mybob.add_bob_to_grid()
         return
 
@@ -171,16 +170,16 @@ class World():
         if self.bobcount == 0 : return
         while len(self.bobArray)!=0 :
             self.window.Actualise_UserInput()
+            self.update_guis()
             if self.pause : continue
             bob = choice(self.bobArray)
             self.bobArray.remove(bob)
             assert bob in self.gridBob[bob.coord]
-            self.update_guis()
             if not bob.isDead : bob.perception()
             if not bob.isDead : bob.use_memory()
             #Choix d'une action :
-            if not bob.hunt(): #Eat food
-                if not bob.eat(): #Hunt other bobs
+            if not bob.hunt():
+                if not bob.eat():
                     if not bob.fuck(): #Fuck
                         bob.move() #Move randomly
         self.window.display()
@@ -189,7 +188,7 @@ class World():
 
 
     def day(self):
-        # self.statistics()
+        self.statistics()
         if self.bobcount!=0 :
             self.dayCounter += 1
             self.tickCounter = 0
@@ -235,7 +234,8 @@ class World():
         
         self.isoCoordTable[(x,y)] = (x-y, (x+y)/2)
         return self.isoCoordTable[(x,y)]
-
+    
+                
     def update_bobs(self):
         for key in self.gridBob:
             for bob in self.gridBob[key]:
@@ -246,9 +246,9 @@ class World():
         FOOD_SIZE = 13*self.window.zoom
         for key in self.gridFood:
             (x,y)=self.isoCoordTable[key] #coordonnées Top Left de la case
-            x+=TILE_SIZE/2 #coordonnée centre de la case
-            x+=FOOD_SIZE/4 #Coordonnée top left de la food
-            y+=TILE_SIZE/5 #coordonnée de la hauteur de la food.
+            x-=TILE_SIZE/2 #coordonnée centre de la case
+            x-=FOOD_SIZE/4 #Coordonnée top left de la food
+            y-=TILE_SIZE/5 #coordonnée de la hauteur de la food.
             self.window.surfacebob.blit(pygame.transform.scale(self.imageFood, (int(self.imageFood.get_width() * self.window.zoom), int(self.imageFood.get_height() * self.window.zoom))), (x,y))
     
     def add_gui_to_list(self, gui):

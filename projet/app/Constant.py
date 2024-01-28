@@ -6,15 +6,14 @@ AFFICHAGE = True
 TICKTIME = 5
 
 
-
 ### Grille ###
-gridSizeX = 100 #Taille de la grille sur l'axe X.
-gridSizeY = 100 #Taille de la grille sur l'axe Y. 
+gridSizeX = 50 #Taille de la grille sur l'axe X.
+gridSizeY = 50 #Taille de la grille sur l'axe Y. 
 
 ### Ticks and game ###
 ticksPerDay = 100 #Nombre de Ticks par jour
 bobsQty = 100 #quantité initiale de Bobs.
-foodQty = 1000  #quantité d'items Food générés par jours
+foodQty = 100 #quantité d'items Food générés par jours
 NbDay = 50 #Nombre de jour à jouer
 
 
@@ -33,13 +32,13 @@ Reproduction = True
 energyInitLevel = 100 #Niveau d'énergie initial des Bobs.
 maxEnergy = 200 #Energie max d'un Bob.
 #Bob's perception
-InitPerception = 3
+InitPerception = 2
 #Bob's velocity
-InitVelocity = 3
+InitVelocity = 1
 #Bob's memory
-InitMemory = 3
+InitMemory = 1
 #Bob's mass
-InitMass = 3
+InitMass = 1
 
 ### Taux de mutation ###
 TauxMutationMass = 0.2
@@ -79,7 +78,6 @@ assets = {
     "tile" : pygame.image.load(os.path.abspath("src/Tile32x32.png")),
 }
 
-
 ### Colors ###
 bleu = (0, 0, 250)
 noir = (0, 0, 0)
@@ -87,6 +85,9 @@ rouge = (250, 0, 0)
 vert = (0, 250, 0)
 blanc = (250, 250, 250)
 marron = (139, 69, 19)
-gridSize = 10
+
 ### Dictionnaire Options Game ###
-option = {"gridSizeX" : gridSizeX,}
+options = {"gridSizeX" : gridSizeX, "gridSizeY" : gridSizeY, "ticksPerDay" : ticksPerDay, "bobsQty" : bobsQty,
+        "foodQty" : foodQty, "NbDay" : NbDay, "energyInitLevel" : energyInitLevel,
+        "InitPerception" : InitPerception, "InitVelocity" : InitVelocity, "InitMass" : InitMass, 
+        "InitMemory" : InitMemory, "TauxMutationMass" : TauxMutationMass, "TauxMutationVelocity" : TauxMutationVelocity , "TauxMutationMemory" : TauxMutationMemory, "TauxMutationPerception" : TauxMutationPerception   }

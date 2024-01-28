@@ -1,6 +1,7 @@
 from .Constant import *
 import pygame
-from .Window import *
+
+
 
 class Tile():
 

@@ -4,8 +4,12 @@ from time import sleep
 from pygame.locals import *
 from threading import Thread
 import sys
- 
+from .Tile import *
 from .Constant import *
+
+
+
+
 largeur, hauteur = 800, 600
 fenetre = pygame.display.set_mode((largeur, hauteur))
 pygame.display.set_caption("PROJET_PYTHON_2024")
@@ -26,9 +30,6 @@ couleur = couleur_inactive
 textes = [''] * 8
 actif_champ = None
 
-
-
-
 champs = [pygame.Rect(300, 50 + i * 70, 300, 50) for i in range(8)]
 couleur_active = pygame.Color('dodgerblue2')
 couleur_inactive = pygame.Color('lightskyblue3')
@@ -39,40 +40,38 @@ actif_champ = None
 
 
 class Window:
-
-
-    def __init__(self,myGame):
+    """
+    Classe dédiée à l'affichage
+    """
+    def __init__(self, myGame):
         self.game = myGame
         self.infoObject = pygame.display.Info()
+        
+        
         self.screen = pygame.display.set_mode((self.infoObject.current_w - 600, self.infoObject.current_h - 600))
-        self.running = True
-        self.zoom = 1
-        self.isoCoordTable = {}
+        self.surfacebob = pygame.Surface((self.infoObject.current_w, self.infoObject.current_h )).convert_alpha()
+        self.surfacetile = pygame.Surface((self.infoObject.current_w, self.infoObject.current_h)).convert_alpha()
+        self.isoCoordTable = {} #dictionnaire qui associe les coordonnées 2D des tiles à leurs coordonnées ISO. On l'utilisera pour placer les bobs exactement sur les tiles. (x réel , y réel) -> (x iso , y iso)
         self.offsetx = 0
         self.offsety = 0
-        self.value = 20
+        self.zoom = 1
+        self.value = 20 #taille de la grille // A RELIER AVEC LES PARAMETRES ## ???!!!
+        self.screen.fill((255,255,255))
         self.pages = []
-        self.screen.fill("WHITE")
-        self.current_page = 0  # Ajout d'une variable pour suivre la page actuelle
         self.menu_active = True
-        self.current_page = 0
         self.game_active = False  # Ajout d'une variable pour indiquer si le jeu est actif
         self.suivant_pressed = False
         self.pages.append(self.display_menu)
         self.pages.append(self.affiche_formulaire)
         self.pages.append(self.affiche_deuxieme_page)
-        self.screen.fill((255,255,255))
-        self.surfacebob = pygame.Surface((self.infoObject.current_w-200, self.infoObject.current_h-200),pygame.SRCALPHA, 32).convert_alpha()
-        self.surfacetile = pygame.Surface((self.infoObject.current_w-200, self.infoObject.current_h-200),pygame.SRCALPHA, 32).convert_alpha()
-
-        self.display_menu()
-
+        self.current_page = 0
+    
     def afficher_texte(self,texte, x, y):
         texte_surface = police.render(texte, True, blanc)
         texte_rect = texte_surface.get_rect()
         texte_rect.center = (x, y)
         fenetre.blit(texte_surface, texte_rect)
-
+    
     def display_menu(self):
         music_song = pygame.mixer.Sound("music_pygame.mp3")
         music_song.play()
@@ -88,12 +87,10 @@ class Window:
                             print("Start")
                             self.menu_active = False
                             self.game_active = True
-                        
-                            self.display()
-
+                            self.run_game()
                         elif 300 <= y <= 350:
                             print("Options")
-                            variables = ['GridSizeX', 'GridSizeY', 'TicksPerDay', 'BobsQty', 'FoodQty', 'EnergyInitLevel', 'MaxEnergy', 'InitPerception']
+                            variables = ['gridSizeX', 'gridSizeY', 'ticksPerDay', 'bobsQty', 'foodQty', 'NbDay', 'maxEnergy', 'energyInitLevel']
                             self.affiche_formulaire(variables)
                         elif 400 <= y <= 450:
                             pygame.quit()
@@ -113,17 +110,77 @@ class Window:
 
             pygame.display.update()
 
+    def display(self):
+        pygame.display.update()
+        self.screen.fill((255,255,255))
+        self.surfacebob.fill((0,0,0,0))
+        self.game.update_bobs()
+        self.game.update_food()
+        self.surfacebob.set_alpha(255)
+        self.blit_surfacetile_screen()
+        self.blit_surfacebob_screen()
 
 
-    def continuous_display(self):
-        ThreadDisplay = Thread(target=self.continuous_display_thread)
-        ThreadDisplay.start()
+    def blit_surfacebob_screen(self):
+        self.screen.blit(self.surfacebob, (0, 0))
 
-    def continuous_display_thread(self):
-        while self.running:
-            self.Actualise_user_input()
-            pygame.display.update()
-            sleep(0.01)
+    def blit_surfacetile_screen(self):
+        self.screen.blit(self.surfacetile, (0, 0))
+
+    def Actualise_UserInput(self):
+        """
+        Actualise the zoom from keyboard input or mousewheel.
+        Quit if the window is being shut down by the user"""
+        for event in pygame.event.get():
+            #Exit
+            if event.type == pygame.QUIT: self.game.isRunning = False
+            #zoom souris
+            if event.type == pygame.MOUSEWHEEL:
+                if event.y == 1 :
+                    if self.zoom >= 3 : break
+                    else : self.zoom+=0.15
+                else :
+                    if self.zoom <= 0.5 : break
+                    else : self.zoom-=0.15
+            #Appui clavier
+            if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_i: #touche i -> zoom in
+                        if self.zoom >= 3 : break
+                        else : self.zoom+=0.15
+                    elif event.key == pygame.K_o: #touche o -> zoom out
+                        if self.zoom <= 0.5 : break
+                        else : self.zoom -= 0.15
+                    elif event.key == pygame.K_DOWN: #touche flèche down
+                        self.offsety -= 1
+                    elif event.key == pygame.K_UP: #touche flèche up
+                        self.offsety += 1
+                    elif event.key == pygame.K_RIGHT: #touche flèche droite
+                        self.offsetx -= 1
+                    elif event.key == pygame.K_LEFT: #touche flèche gauche
+                        self.offsetx += 1 
+                    elif event.key == pygame.K_SPACE: #touche espace
+                        self.game.pause = not self.game.pause
+        return
+    
+    def run_game(self):
+        while self.game_active:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_active = False
+                    self.menu_active = True
+                    self.display_menu()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        # Pause the game and display the pause menu
+                        self.game.pause = True
+                        self.affiche_pause_menu()
+            
+            # The rest of your game loop logic goes here
+            self.game.run_game()
+            self.display()  # This method should update and render your game
+
+            pygame.display.flip()
+
 
     def affiche_pause_menu(self):
         self.pause_menu_active = True
@@ -154,42 +211,7 @@ class Window:
 
             pygame.display.update()
  
-    def Actualise_user_input(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-                self.menu_active = False
-                self.game_active = False
-            if event.type == pygame.MOUSEWHEEL:
-                if event.y == 1:
-                    if self.zoom >= 3:
-                        break
-                    else:
-                        self.zoom += 0.15
-                else:
-                    if self.zoom <= 0.5:
-                        break
-                    else:
-                        self.zoom -= 0.15
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_i:
-                    if self.zoom >= 3:
-                        break
-                    else:
-                        self.zoom += 0.15
-                elif event.key == pygame.K_o:
-                    if self.zoom <= 0.5:
-                        break
-                    else:
-                        self.zoom -= 0.15
-                elif event.key == pygame.K_UP:
-                    self.offsety -= 1
-                elif event.key == pygame.K_DOWN:
-                    self.offsety += 1
-                elif event.key == pygame.K_LEFT:
-                    self.offsetx -= 1
-                elif event.key == pygame.K_RIGHT:
-                    self.offsetx += 1
+    
     def affiche_deuxieme_page(self):
         global couleur_inactive
         global actif_champ
@@ -316,35 +338,8 @@ class Window:
                 largeur_texte = max(200, texte_surface.get_width() + 10)
                 champ.w = largeur_texte
                 fenetre.blit(texte_surface, (champ.x + 5, champ.y + 5))
+
             pygame.display.update()
+
         self.affiche_deuxieme_page()  # Appeler la méthode pour afficher la deuxième page
-
-
-
-
-    def run(self):
-        while self.running:
-            self.pages[self.current_page]()
     
-    def display(self):
-        pygame.display.update()
-        self.screen.fill((255,255,255))
-        self.surfacebob.fill((0,0,0,0))
-        self.game.update_bobs()
-        self.game.update_food()
-        self.surfacebob.set_alpha(255)
-        self.blit_surfacetile_screen()
-        self.blit_surfacebob_screen()
-
-
-
-    def blit_surfacebob_screen(self):
-        self.screen.blit(self.surfacebob, (0, 0))
-
-    def blit_surfacetile_screen(self):
-        self.screen.blit(self.surfacetile, (0, 0))
-
- 
-
-
-

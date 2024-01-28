@@ -54,7 +54,7 @@ class Bob:
     def __init__(self, game, ID, coord) :
         self.game = game
         self.ID = ID
-        self.mass = InitMass
+        self.mass = self.game.options["InitMass"]
         self.velocity = InitVelocity
         self.energy = energyInitLevel
         self.memory = InitMemory
@@ -68,7 +68,8 @@ class Bob:
         self.isDead = False
         self.fuite = False
         self.bufvelo = 0.00
-        self.image = assets["bob"]
+        self.image = ""
+        self.choose_image()
         self.rect = self.image.get_rect()
         self.gui = GraphicBob(self.game, self)
         self.game.add_gui_to_list(self.gui)
@@ -83,7 +84,7 @@ class Bob:
 
         if self.velocity >= 1.2 and self.velocity < 1.6:
             self.image = assets["bob.blue"]
-        elif self.velocity > 2 :
+        elif self.velocity >= 1.6 :
             self.image = assets["bob.rouge"]
 
     def add_bob_to_grid(self):
@@ -142,7 +143,7 @@ class Bob:
         Fonction qui représente l'action d'un bob qui mange un autre bob.
         """
         for prey in self.game.gridBob[self.coord]:
-            if prey.mass / self.mass <= SeuilPredator :
+            if prey != self and prey.mass / self.mass <= SeuilPredator :
                 #On a trouvé un bob que l'on peut manger !
                 #EAT THE BOB
                 energyToEat = 1/2 * prey.energy * (1-prey.mass/self.mass)
@@ -159,7 +160,7 @@ class Bob:
         Fonction de reproduction sexuelle entre 2 bobs.
         """
         for myLover in self.game.gridBob[self.coord] :
-            if myLover.mass >= SeuilPredator*self.mass and self.energy >= parentEnergyRequired and myLover.energy >= parentEnergyRequired and myLover in self.game.bobArray :
+            if myLover != self and myLover.mass >= SeuilPredator*self.mass and self.energy >= parentEnergyRequired and myLover.energy >= parentEnergyRequired and myLover in self.game.bobArray :
             #SI le rapport des masses est bon & si l'énergie des deux bobs est supérieur au seuil nécessaire pour la reproduction sexuelle et si le partenaire n'a pas déja effectué une action pendant ce tick.    
                 babyBob=Bob(self.game, self.game.lastID+1, self.coord)
                 babyBob.energy=birthSexEnergy
@@ -167,7 +168,7 @@ class Bob:
                 babyBob.mass = int(self.Val_Mutation(TauxMutationMass, (self.mass + myLover.mass)/2))
                 babyBob.velocity = self.Val_Mutation(TauxMutationVelocity, (self.velocity + myLover.velocity)/2)
                 babyBob.memory = int(self.Val_Mutation(TauxMutationMemory, (self.memory + myLover.memory)/2))
-                babyBob.perception = int(self.Val_Mutation(TauxMutationPerception, (self.perception + myLover.perceptionScore)/2))
+                babyBob.perception = int(self.Val_Mutation(TauxMutationPerception, (self.perceptionScore + myLover.perceptionScore)/2))
 
                 babyBob.add_bob_to_grid()
                 self.game.bobArray.remove(myLover)
@@ -184,13 +185,14 @@ class Bob:
         """
         if (self.coord not in self.game.gridFood) or self.energy == maxEnergy : return False
         if self.energy + self.game.gridFood[self.coord] <= maxEnergy :
-            energyToEat = self.game.gridFood[self.coord]
-            del self.game.gridFood[self.coord]
+            self.energy += self.game.gridFood.pop(self.coord)
         else :
             energyToEat = maxEnergy-self.energy
             self.game.gridFood[self.coord] -= energyToEat
             self.energy += energyToEat
             self.partheno()
+        if self.coord == self.remembered_food[0] :
+            self.remembering_food == False
         self.consumeEnergy(tickStaticEnergy) #le bob is dead
         return True
 
@@ -212,7 +214,6 @@ class Bob:
                         score += self.distance(i, j, x, y)    
                     scores[(i,j)] = score
                     score = 0
-
         return max(scores, keys=scores.get)
 
 
@@ -235,11 +236,7 @@ class Bob:
                 mov_y = round(dir_y*(velocity - abs(mov_x)))
             else :
                 mov_y = round(dir_y*velocity)
-                mov_x = round(dir_x*(velocity - (mov_y)))
-
-            i += mov_x
-            j += mov_y
-            
+                mov_x = round(dir_x*(velocity - abs(mov_y)))
         return (i, j)
 
 
@@ -260,24 +257,28 @@ class Bob:
             if (move_x, move_y) not in self.path :
                 MoveOk = True
             if not Memory : MoveOk = True
+            if (move_x, move_y) == self.coord : MoveOk = False
         return (move_x, move_y)
 
     #Function perception to get all elements around
     def perception(self):
         if not Perception : return
         (x, y) = self.coord
+        self.fuite = False
         self.seen = {"Bob+": {}, "Bob-": {}, "Food": {}}
         for i in range(-self.perceptionScore, self.perceptionScore  + 1):
             for j in range(- (self.perceptionScore - abs(i)) ,self.perceptionScore - abs(i) + 1):
                 if((x + i, y + j) in self.game.gridFood.keys()):
                     self.seen["Food"][(x + i, y + j)] = self.game.gridFood[(x + i, y + j)]
                 elif((x + i, y + j) in self.game.gridBob.keys()):
-                    for bob in self.game.gridBob[x + i, y+j] :    
+                    for bob in self.game.gridBob[x + i, y+j] :
+                        if bob == self or bob.mass == 0: continue    
                         if(self.mass / bob.mass <= SeuilPredator ):
                             self.seen["Bob+"][(x + i, y + j)] = bob
                             self.fuite = True
                         elif(self.mass / bob.mass >= 1 - SeuilPredator):
                             self.seen["Bob-"][(x + i, y + j)] = bob
+        if self.remembered_food[0] not in self.seen["Food"] : self.remembering_food = False
         self.seen["Food"] = dict(sorted(self.seen["Food"].items(), key=lambda x:x[1], reverse = True))
         self.consumeEnergy(self.perceptionScore*tickPerceptionPenalty)
         return
@@ -292,13 +293,13 @@ class Bob:
         if self.fuite == 1 :
             (x,y) = self.escape()
         else:
-            if Perception : (x,y) = self.deplace_perception()
+            if Perception :
+                (x,y) = self.deplace_perception()
             if (x,y) == (-1, -1):
                 if self.remembering_food and Memory:
                     (x,y) = self.move_towards_coord(self.remembered_food[0])
                 else:
                     (x, y) = self.random_move()
-        
         if (x,y) not in self.game.gridBob : self.game.gridBob[(x,y)]=[]
         self.game.gridBob[(x,y)].append(self) #On ajoute le bob dans le dictionnaire à sa nouvelle position.
         self.game.gridBob[key].remove(self) #on retire le bob de son ancienne position.
@@ -321,8 +322,8 @@ class Bob:
                 self.remembered_food = (self.remembered_food[0], 0)
         # find the biggest food in the bob's perception
         if len(self.seen["Food"].keys()) != 0: 
-            if next(iter(self.seen["Food"].items()))[1] > self.remembered_food[1]:
-                self.possiblefood = next(iter(self.seen["Food"].items()))
+            if self.seen["Food"][next(iter(self.seen["Food"]))] > self.remembered_food[1]:
+                self.possiblefood = (next(iter(self.seen["Food"])),self.seen["Food"][next(iter(self.seen["Food"]))])
             else:
                 self.possiblefood = [(0,0), 0]
         #determines whether the bob needs to remember the food.
@@ -333,10 +334,9 @@ class Bob:
         # if the bob already remembers at its maximum capacity, remove the last remembered tiles
         while len(self.path) > 2 * (self.memory-self.remembering_food):
             del self.path[0]
-        
+
         self.consumeEnergy(self.memory*tickMemoryPenalty)
         return
-    
 
     #function to find the best food to hunt in the bob's perception
     #self.currenttarget : variable which will contain the best food to hunt
