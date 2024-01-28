@@ -54,7 +54,7 @@ class Bob:
     def __init__(self, game, ID, coord) :
         self.game = game
         self.ID = ID
-        self.mass = InitMass
+        self.mass = self.game.options["InitMass"]
         self.velocity = InitVelocity
         self.energy = energyInitLevel
         self.memory = InitMemory
@@ -68,12 +68,12 @@ class Bob:
         self.isDead = False
         self.fuite = False
         self.bufvelo = 0.00
-        self.image = assets["bob"]
+        self.image = ""
+        self.choose_image()
         self.rect = self.image.get_rect()
         self.gui = GraphicBob(self.game, self)
         self.game.add_gui_to_list(self.gui)
         self.game.lastID += 1
-        self.action = ""
 
     #FONCTIONS DU BOB : hunt, eat, partheno, fuck, Move.
         
@@ -84,7 +84,7 @@ class Bob:
 
         if self.velocity >= 1.2 and self.velocity < 1.6:
             self.image = assets["bob.blue"]
-        elif self.velocity > 2 :
+        elif self.velocity >= 1.6 :
             self.image = assets["bob.rouge"]
 
     def add_bob_to_grid(self):
@@ -150,7 +150,6 @@ class Bob:
                 if self.energy+energyToEat <= maxEnergy : self.energy+=energyToEat
                 else : self.energy = maxEnergy
                 prey.die() #Le bob mangé meurt...
-                self.action = "hunt"
                 return True
         return False
 
@@ -175,7 +174,6 @@ class Bob:
                 self.game.bobArray.remove(myLover)
                 myLover.consumeEnergy(sexEnergy)
                 self.consumeEnergy(sexEnergy)
-                self.action = "fuck"
                 return True
         return False
 
@@ -196,7 +194,6 @@ class Bob:
         if self.coord == self.remembered_food[0] :
             self.remembering_food == False
         self.consumeEnergy(tickStaticEnergy) #le bob is dead
-        self.action = "eat"
         return True
 
 
@@ -217,7 +214,6 @@ class Bob:
                         score += self.distance(i, j, x, y)    
                     scores[(i,j)] = score
                     score = 0
-        self.action += "escape"
         return max(scores, keys=scores.get)
 
 
@@ -241,7 +237,6 @@ class Bob:
             else :
                 mov_y = round(dir_y*velocity)
                 mov_x = round(dir_x*(velocity - abs(mov_y)))
-        self.action += "towards"
         return (i, j)
 
 
@@ -263,13 +258,13 @@ class Bob:
                 MoveOk = True
             if not Memory : MoveOk = True
             if (move_x, move_y) == self.coord : MoveOk = False
-        self.action += "random"
         return (move_x, move_y)
 
     #Function perception to get all elements around
     def perception(self):
         if not Perception : return
         (x, y) = self.coord
+        self.fuite = False
         self.seen = {"Bob+": {}, "Bob-": {}, "Food": {}}
         for i in range(-self.perceptionScore, self.perceptionScore  + 1):
             for j in range(- (self.perceptionScore - abs(i)) ,self.perceptionScore - abs(i) + 1):
@@ -277,12 +272,13 @@ class Bob:
                     self.seen["Food"][(x + i, y + j)] = self.game.gridFood[(x + i, y + j)]
                 elif((x + i, y + j) in self.game.gridBob.keys()):
                     for bob in self.game.gridBob[x + i, y+j] :
-                        if bob == self : continue    
+                        if bob == self or bob.mass == 0: continue    
                         if(self.mass / bob.mass <= SeuilPredator ):
                             self.seen["Bob+"][(x + i, y + j)] = bob
                             self.fuite = True
                         elif(self.mass / bob.mass >= 1 - SeuilPredator):
                             self.seen["Bob-"][(x + i, y + j)] = bob
+        if self.remembered_food[0] not in self.seen["Food"] : self.remembering_food = False
         self.seen["Food"] = dict(sorted(self.seen["Food"].items(), key=lambda x:x[1], reverse = True))
         self.consumeEnergy(self.perceptionScore*tickPerceptionPenalty)
         return
@@ -293,7 +289,6 @@ class Bob:
         self.bufvelo += self.velocity - int(self.velocity)
         key = self.coord
         (x, y) = (-1, -1)
-        self.action = "Move"
         ## Fuite ##
         if self.fuite == 1 :
             (x,y) = self.escape()
@@ -312,7 +307,6 @@ class Bob:
         self.bufvelo -= int(self.bufvelo)
         self.coord = (x,y)
         self.consumeEnergy(self.mass*(self.velocity**2))
-        print(f"{x, y}")
         return 0
     
     def use_memory(self):
@@ -322,14 +316,14 @@ class Bob:
         if self.possiblefood not in self.seen["Food"].items() and self.possiblefood[1] > 0:
             self.remembered_food = self.possiblefood
         #if the coordinates of the remembered food contain a different amount of food (food eaten or food that respawned)
-        if (self.remembered_food[0]) in self.seen["Food"].keys():
+        if (self.remembered_food[0]) in self.seen["Food"]:
             self.remembering_food = False
             if self.seen["Food"][self.remembered_food[0]] != self.remembered_food[1]:
                 self.remembered_food = (self.remembered_food[0], 0)
         # find the biggest food in the bob's perception
         if len(self.seen["Food"].keys()) != 0: 
-            if next(iter(self.seen["Food"].items()))[1] > self.remembered_food[1]:
-                self.possiblefood = next(iter(self.seen["Food"].items()))
+            if self.seen["Food"][next(iter(self.seen["Food"]))] > self.remembered_food[1]:
+                self.possiblefood = (next(iter(self.seen["Food"])),self.seen["Food"][next(iter(self.seen["Food"]))])
             else:
                 self.possiblefood = [(0,0), 0]
         #determines whether the bob needs to remember the food.
@@ -340,9 +334,9 @@ class Bob:
         # if the bob already remembers at its maximum capacity, remove the last remembered tiles
         while len(self.path) > 2 * (self.memory-self.remembering_food):
             del self.path[0]
+
         self.consumeEnergy(self.memory*tickMemoryPenalty)
         return
-    
 
     #function to find the best food to hunt in the bob's perception
     #self.currenttarget : variable which will contain the best food to hunt
@@ -359,7 +353,6 @@ class Bob:
                     currenttarget = food[0]
                     maxfood = food[1]
         if currenttarget != None:
-            self.action += "perception 1"
             return self.move_towards_coord(currenttarget)
         else:
             maxfood = self.energy
@@ -372,7 +365,6 @@ class Bob:
                         maxfood = bob[1].energy
         
         if currenttarget != None :
-            self.action += "perception 2"
             return self.move_towards_coord(currenttarget)
         else :
             return (-1, -1)

@@ -59,10 +59,6 @@ class GUI_Element:
     def set_parent(self, parent):
         self.parent = parent
 
-    def gpu_render(self, surface, x, y):
-        texture = pygame._sdl2.Texture.from_surface(self.game.renderer, surface)
-        texture.draw(dstrect=(x, y))
-
     def update(self):
         self.update_rect()
 

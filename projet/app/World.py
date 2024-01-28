@@ -19,7 +19,7 @@ class World():
         self.window = Window(self)
         self.tile = Tile(self)
         self.guis = [] # Tableau des GUI
-        self.options = option
+        self.options = options
         self.lastID = -1 #identifiant unique pour chaque bob créé.
         self.pause = False #pour mettre sur pause le jeu.
         self.affichage = AFFICHAGE # Affichage On/Off
@@ -30,7 +30,6 @@ class World():
         self.dayCounter=0 #Compteur du nombre de jour.
         self.tickCounter=0 #Compteur du nombre de tick
         self.tile.generate_tiles()
-        self.window.blit_surfacetile_screen()
         self.bobSpawn() #Générer les bobs à l'initialisation du jeu.
         self.imageFood = assets["food"]
         #statistiques de la forme (min, max, moyenne)
@@ -70,7 +69,7 @@ class World():
             x = randint(0, gridSizeX-1)
             y = randint(0, gridSizeY-1)
             if (x, y) not in self.gridBob : self.gridBob[(x, y)]=[]
-            mybob=Bob(self, self.lastID+1, (x,y))
+            mybob=Bob(self, self.lastID, (x,y))
             mybob.add_bob_to_grid()
         return
 
@@ -171,11 +170,11 @@ class World():
         if self.bobcount == 0 : return
         while len(self.bobArray)!=0 :
             self.window.Actualise_UserInput()
+            self.update_guis()
             if self.pause : continue
             bob = choice(self.bobArray)
             self.bobArray.remove(bob)
             assert bob in self.gridBob[bob.coord]
-            self.update_guis()
             if not bob.isDead : bob.perception()
             if not bob.isDead : bob.use_memory()
             #Choix d'une action :
@@ -183,14 +182,13 @@ class World():
                 if not bob.eat():
                     if not bob.fuck(): #Fuck
                         bob.move() #Move randomly
-            print(f"action = {bob.action}")
         self.window.display()
         clock.tick(TICKTIME)
         return
 
 
     def day(self):
-        # self.statistics()
+        self.statistics()
         if self.bobcount!=0 :
             self.dayCounter += 1
             self.tickCounter = 0

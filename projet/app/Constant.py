@@ -7,13 +7,13 @@ TICKTIME = 5
 
 
 ### Grille ###
-gridSizeX = 100 #Taille de la grille sur l'axe X.
-gridSizeY = 100 #Taille de la grille sur l'axe Y. 
+gridSizeX = 50 #Taille de la grille sur l'axe X.
+gridSizeY = 50 #Taille de la grille sur l'axe Y. 
 
 ### Ticks and game ###
 ticksPerDay = 100 #Nombre de Ticks par jour
-bobsQty = 5 #quantité initiale de Bobs.
-foodQty = 500 #quantité d'items Food générés par jours
+bobsQty = 100 #quantité initiale de Bobs.
+foodQty = 100 #quantité d'items Food générés par jours
 NbDay = 50 #Nombre de jour à jouer
 
 
@@ -32,7 +32,7 @@ Reproduction = True
 energyInitLevel = 100 #Niveau d'énergie initial des Bobs.
 maxEnergy = 200 #Energie max d'un Bob.
 #Bob's perception
-InitPerception = 1
+InitPerception = 2
 #Bob's velocity
 InitVelocity = 1
 #Bob's memory
@@ -87,4 +87,7 @@ blanc = (250, 250, 250)
 marron = (139, 69, 19)
 
 ### Dictionnaire Options Game ###
-option = {"gridSizeX" : gridSizeX,}
+options = {"gridSizeX" : gridSizeX, "gridSizeY" : gridSizeY, "ticksPerDay" : ticksPerDay, "bobsQty" : bobsQty,
+        "foodQty" : foodQty, "NbDay" : NbDay, "energyInitLevel" : energyInitLevel,
+        "InitPerception" : InitPerception, "InitVelocity" : InitVelocity, "InitMass" : InitMass, 
+        "InitMemory" : InitMemory, "TauxMutationMass" : TauxMutationMass, "TauxMutationVelocity" : TauxMutationVelocity , "TauxMutationMemory" : TauxMutationMemory, "TauxMutationPerception" : TauxMutationPerception   }
