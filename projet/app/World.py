@@ -179,10 +179,11 @@ class World():
             if not bob.isDead : bob.perception()
             if not bob.isDead : bob.use_memory()
             #Choix d'une action :
-            if not bob.hunt(): #Eat food
-                if not bob.eat(): #Hunt other bobs
+            if not bob.hunt():
+                if not bob.eat():
                     if not bob.fuck(): #Fuck
                         bob.move() #Move randomly
+            print(f"action = {bob.action}")
         self.window.display()
         clock.tick(TICKTIME)
         return
@@ -247,9 +248,9 @@ class World():
         FOOD_SIZE = 13*self.window.zoom
         for key in self.gridFood:
             (x,y)=self.isoCoordTable[key] #coordonnées Top Left de la case
-            x+=TILE_SIZE/2 #coordonnée centre de la case
-            x+=FOOD_SIZE/4 #Coordonnée top left de la food
-            y+=TILE_SIZE/5 #coordonnée de la hauteur de la food.
+            x-=TILE_SIZE/2 #coordonnée centre de la case
+            x-=FOOD_SIZE/4 #Coordonnée top left de la food
+            y-=TILE_SIZE/5 #coordonnée de la hauteur de la food.
             self.window.surfacebob.blit(pygame.transform.scale(self.imageFood, (int(self.imageFood.get_width() * self.window.zoom), int(self.imageFood.get_height() * self.window.zoom))), (x,y))
     
     def add_gui_to_list(self, gui):

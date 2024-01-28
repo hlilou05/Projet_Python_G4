@@ -7,13 +7,13 @@ TICKTIME = 5
 
 
 ### Grille ###
-gridSizeX = 50 #Taille de la grille sur l'axe X.
-gridSizeY = 50 #Taille de la grille sur l'axe Y. 
+gridSizeX = 100 #Taille de la grille sur l'axe X.
+gridSizeY = 100 #Taille de la grille sur l'axe Y. 
 
 ### Ticks and game ###
 ticksPerDay = 100 #Nombre de Ticks par jour
-bobsQty = 100 #quantité initiale de Bobs.
-foodQty = 200  #quantité d'items Food générés par jours
+bobsQty = 5 #quantité initiale de Bobs.
+foodQty = 500 #quantité d'items Food générés par jours
 NbDay = 50 #Nombre de jour à jouer
 
 
@@ -32,13 +32,13 @@ Reproduction = True
 energyInitLevel = 100 #Niveau d'énergie initial des Bobs.
 maxEnergy = 200 #Energie max d'un Bob.
 #Bob's perception
-InitPerception = 3
+InitPerception = 1
 #Bob's velocity
-InitVelocity = 3
+InitVelocity = 1
 #Bob's memory
-InitMemory = 3
+InitMemory = 1
 #Bob's mass
-InitMass = 3
+InitMass = 1
 
 ### Taux de mutation ###
 TauxMutationMass = 0.2
