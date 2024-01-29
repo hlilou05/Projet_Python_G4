@@ -126,15 +126,18 @@ class Bob:
         return False #le bob is alive !
     
     def die(self):
-        """
-        Fonction utilisée pour supprimer correctement un bob décédé.
-        """
-        self.game.gridBob[self.coord].remove(self) #suppression du bob du tableau associé à ses coordonnées dans le dictionnaire gridBob.
-        if self in self.game.bobArray : self.game.bobArray.remove(self) #Retirer le bob du tableau bobArray qui contient les bobs qui doivent jouer leur coup au tick présent. 
-        if len(self.game.gridBob[self.coord])==0: del(self.game.gridBob[self.coord]) #Si le tableau est vide, alors on supprime la case du dictionnaire.
-        self.game.bobcount -= 1
-        self.isDead = True
-        return
+            """
+            Fonction utilisée pour supprimer correctement un bob décédé.
+            """
+            if self.coord in self.game.gridBob:
+                if self in self.game.gridBob[self.coord]:
+                    self.game.gridBob[self.coord].remove(self)
+                if len(self.game.gridBob[self.coord])==0: del(self.game.gridBob[self.coord])
+            # self.game.gridBob[self.coord].remove(self) #suppression du bob du tableau associé à ses coordonnées dans le dictionnaire gridBob.
+            if self in self.game.bobArray : self.game.bobArray.remove(self) #Retirer le bob du tableau bobArray qui contient les bobs qui doivent jouer leur coup au tick présent.  #Si le tableau est vide, alors on supprime la case du dictionnaire.
+            self.game.bobcount -= 1
+            self.isDead = True
+            return
 
     def hunt(self):
         if not Hunt : return False
@@ -217,27 +220,33 @@ class Bob:
         return max(scores, keys=scores.get)
 
 
-    def move_towards_coord(self, coord):
+   def move_towards_coord(self, coord):
         (i, j) = self.coord
         (x, y) = coord
         velocity = int(self.velocity) + int(self.bufvelo)
         distance_to_coord = self.distance(i, j, x, y)
-            
         if distance_to_coord <= velocity:
             return (x, y)
-            
-        else:
-
+        else:              
             dir_x = (x - i) / distance_to_coord
             dir_y = (y - j) / distance_to_coord
-
-            if random.randint(0,1):
-                mov_x = round(dir_x*velocity)
-                mov_y = round(dir_y*(velocity - abs(mov_x)))
-            else :
-                mov_y = round(dir_y*velocity)
-                mov_x = round(dir_x*(velocity - abs(mov_y)))
-        return (i, j)
+            if (abs(dir_x - int(dir_x)) - 0.5) < 10e-13:
+                if dir_x > 0:
+                    dir_x+=0.1
+                else:
+                    dir_x -= 0.1
+            if (abs(dir_y - int(dir_y)) - 0.5) < 10e-13:
+                if dir_y > 0:
+                    dir_y+=0.1
+                else:
+                    dir_y -= 0.1
+            if randint(0,1):
+                mov_x = round(dir_x * velocity)
+                mov_y = round(dir_y * (velocity - abs(mov_x)))             
+            else :                 
+                mov_y = round(dir_y * velocity)                 
+                mov_x = round(dir_x * (velocity - abs(mov_y)))     
+        return (i+mov_x, j+mov_y)
 
 
     def random_move(self):
